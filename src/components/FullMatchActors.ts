@@ -11,6 +11,26 @@ export type FullMatchActors = {
   attackFinished: boolean;
 };
 
+function addJerseyName(player: THREE.Group, name: string) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 96;
+  const context = canvas.getContext('2d');
+  if (!context) return;
+  context.fillStyle = '#ffffff';
+  context.font = 'bold 48px Arial';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText(name, 256, 48);
+  const texture = new THREE.CanvasTexture(canvas);
+  const label = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.05, .2),
+    new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide }),
+  );
+  label.position.set(0, 1.45, .39);
+  player.add(label);
+}
+
 function createBasket(scene: THREE.Scene) {
   const board = new THREE.Mesh(
     new THREE.BoxGeometry(4.1, 2.4, .16),
@@ -38,10 +58,13 @@ function createBasket(scene: THREE.Scene) {
 
 export function createFullMatchActors(scene: THREE.Scene, person: PersonFactory): FullMatchActors {
   createBasket(scene);
-  const teammatePositions = [[4.4, 4], [-3.8, -1], [3.8, -6]];
-  const teammates = teammatePositions.map(([x, z]) => {
+  const teammatePositions = [[4.4, -3], [3.8, 2]];
+  const names = ['CURRY', 'LEBRON JAMES'];
+  const teammates = teammatePositions.map(([x, z], index) => {
     const teammate = person(0x22a86b);
     teammate.position.set(x, 0, z);
+    addJerseyName(teammate, names[index]);
+    teammate.userData.role = names[index];
     scene.add(teammate);
     return teammate;
   });
@@ -77,6 +100,19 @@ export function updateFullMatch(
     coach.rotation.z = Math.sin(now * .002 + index) * .035;
   });
   if (!active) return false;
+  if (!match.attackStart && now < match.nextAttackAt) {
+    const seconds = now / 1000;
+    const curry = match.teammates[0];
+    curry.position.set(4.7 + Math.sin(seconds * 1.8) * .7, 0, -4 + Math.cos(seconds * 1.4) * 2.2);
+    curry.rotation.y = Math.PI;
+    const lebron = match.teammates[1];
+    const drive = (seconds % 5) / 5;
+    lebron.position.x = THREE.MathUtils.lerp(4.5, -.7, drive);
+    lebron.position.z = THREE.MathUtils.lerp(4, -15.4, drive);
+    lebron.position.y = drive > .82 ? Math.sin((drive - .82) / .18 * Math.PI) * 1.65 : 0;
+    lebron.rotation.y = Math.PI;
+    match.teammates.forEach((teammate) => teammate.scale.lerp(new THREE.Vector3(1, 1, 1), .08));
+  }
   if (!match.attackStart && now >= match.nextAttackAt) {
     match.attackStart = now;
     match.attackFinished = false;
@@ -94,16 +130,17 @@ export function updateFullMatch(
   match.opponentBall.position.set(attacker.position.x + .42, attacker.position.y + 1.55, attacker.position.z + .15);
 
   match.teammates.forEach((teammate, index) => {
-    const defensiveX = (index - 1) * 2.1;
+    const defensiveX = (index - .5) * 3.2;
     teammate.position.x = THREE.MathUtils.lerp(teammate.position.x, defensiveX, .035);
     teammate.position.z = THREE.MathUtils.lerp(teammate.position.z, 3.5 + index * 1.25, .035);
     teammate.rotation.y = Math.PI;
+    teammate.scale.lerp(new THREE.Vector3(1.32, 1.58, 1.32), .08);
   });
   if (progress > .88) match.opponentBall.position.lerp(new THREE.Vector3(0, 3.45, 8.9), .16);
   if (progress === 1 && !match.attackFinished) {
     match.attackFinished = true;
     onOpponentScore(2);
-    onMessage('🔵 СОПЕРНИК ЗАБИЛ! НАША КОМАНДА СНОВА АТАКУЕТ');
+    onMessage('🔵 СОПЕРНИК ЗАБИЛ! LAKERS СНОВА АТАКУЮТ');
   }
   if (elapsed > 3.6) {
     match.attackStart = 0;

@@ -648,7 +648,7 @@ export function BasketballGame({ onExit }: BasketballGameProps) {
         />
         <div className="hud">
           <div>
-            <small>МЫ — СОПЕРНИК</small>
+            <small>LAKERS — СОПЕРНИК</small>
             <b>{score} : {opponentScore}</b>
           </div>
           <strong>{message}</strong>
