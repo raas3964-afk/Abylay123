@@ -1,0 +1,13 @@
+.registration-form .account-button {
+  margin-top: 12px;
+  padding: 6px;
+  border: 0;
+  background: transparent;
+  color: #ff9a59;
+  box-shadow: none;
+  font-size: 11px;
+}
+
+.registration-form .account-button:hover {
+  color: #fff;
+}

@@ -1,0 +1,15 @@
+.game-exit-button {
+  position: fixed;
+  z-index: 20;
+  top: 28px;
+  right: max(18px, calc((100vw - 1120px) / 2));
+  border: 1px solid #46536a;
+  border-radius: 9px;
+  background: #151e30;
+  color: #b8c1d0;
+  padding: 8px 12px;
+  font: 800 10px Manrope, sans-serif;
+  cursor: pointer;
+}
+.game-exit-button:hover { border-color: #f4772d; color: #fff; }
+@media(max-width:600px){.game-exit-button{top:13px;right:8px;padding:7px 8px}}

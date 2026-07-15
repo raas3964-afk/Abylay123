@@ -1,19 +1,30 @@
-// Стартовый экран твоего проекта — пока он простой и пустой.
-// Когда понадобятся вход и база данных, готовые примеры уже лежат рядом:
-//   src/components/Auth.tsx      — вход / регистрация
-//   src/components/Entries.tsx   — чтение и запись в базу
-// Просто попроси Codex подключить их на экран.
+import { useEffect, useState } from 'react';
+import { BasketballGame } from './components/BasketballGame';
+import { RegistrationPage } from './components/RegistrationPage';
+import { supabase } from './lib/supabase';
 
 export default function App() {
-  return (
-    <main className="container">
-      <section className="hello">
-        <h1>Привет! 🚀</h1>
-        <p>Это твой проект. Пока тут пусто — самое интересное впереди.</p>
-        <p className="hello__hint">
-          Открой Codex и опиши свою идею — этот экран станет твоим приложением.
-        </p>
-      </section>
-    </main>
-  );
+  const [registered, setRegistered] = useState(false);
+  const [guest, setGuest] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setRegistered(Boolean(data.session));
+      setLoading(false);
+    });
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => setRegistered(Boolean(session)));
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  if (loading) return <div className="app-loading">🏀</div>;
+  async function exitGame() {
+    if (registered) await supabase.auth.signOut();
+    setRegistered(false);
+    setGuest(false);
+  }
+
+  return registered || guest
+    ? <BasketballGame onExit={exitGame} />
+    : <RegistrationPage onComplete={() => setRegistered(true)} onGuest={() => setGuest(true)} />;
 }
