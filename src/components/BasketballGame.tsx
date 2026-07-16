@@ -6,11 +6,19 @@ import {
 } from "./BasketballCrowd";
 import { animateReferee, createReferee, signalFoul } from "./BasketballReferee";
 import { createFullMatchActors, requestScreen, updateFullMatch } from "./FullMatchActors";
+import { createBasketballSidelines } from "./BasketballSidelines";
+import { animateBasketballMascot, createBasketballMascot } from "./BasketballMascot";
+import { animateCheerleaders, createCheerleaders } from "./BasketballCheerleaders";
 import "./BasketballGameHeader.css";
 import "./BasketballFullscreen.css";
 
 type Props = {
   active: boolean;
+  mascotVisible: boolean;
+  score: number;
+  opponentScore: number;
+  time: number;
+  quarter: number;
   onScore: (points: number) => void;
   onOpponentScore: (points: number) => void;
   onCharge: (power: number) => void;
@@ -116,13 +124,21 @@ function nbaFlagTexture() {
   return new THREE.CanvasTexture(canvas);
 }
 
-function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: Props) {
+function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter, onScore, onOpponentScore, onCharge, onMessage }: Props) {
   const mount = useRef<HTMLDivElement>(null);
   const activeRef = useRef(active);
+  const mascotVisibleRef = useRef(mascotVisible);
+  const gameInfoRef = useRef({ score, opponentScore, time, quarter });
   const callbacks = useRef({ onScore, onOpponentScore, onCharge, onMessage });
   useEffect(() => {
     activeRef.current = active;
   }, [active]);
+  useEffect(() => {
+    mascotVisibleRef.current = mascotVisible;
+  }, [mascotVisible]);
+  useEffect(() => {
+    gameInfoRef.current = { score, opponentScore, time, quarter };
+  }, [score, opponentScore, time, quarter]);
   useEffect(() => {
     callbacks.current = { onScore, onOpponentScore, onCharge, onMessage };
   }, [onScore, onOpponentScore, onCharge, onMessage]);
@@ -170,14 +186,14 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
         new THREE.PlaneGeometry(11.5, 3.6),
         new THREE.MeshBasicMaterial({ map: bannerTexture(name, subtitle, [firstColor, secondColor]) }),
       );
-      banner.position.set(x, 16.5, -35.42);
+      banner.position.set(x, 14.8, -35.42);
       scene.add(banner);
     });
     const nbaFlag = new THREE.Mesh(
       new THREE.PlaneGeometry(6.8, 10.2),
       new THREE.MeshBasicMaterial({ map: nbaFlagTexture(), side: THREE.DoubleSide }),
     );
-    nbaFlag.position.set(0, 17.2, -8.5);
+    nbaFlag.position.set(0, 15.6, -21);
     nbaFlag.rotation.y = -.12;
     scene.add(nbaFlag);
     const lightPanelMaterial = new THREE.MeshBasicMaterial({ color: 0xaebfd3 });
@@ -322,6 +338,27 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
       scoreboardContext.fillText('GOLDEN STATE', 805, 350);
     }
     const scoreboardTexture = new THREE.CanvasTexture(scoreboardCanvas);
+    let lastScoreboardText = "";
+    const updateArenaScoreboard = () => {
+      if (!scoreboardContext) return;
+      const info = gameInfoRef.current;
+      const clock = `${Math.floor(info.time / 60)}:${String(info.time % 60).padStart(2, "0")}`;
+      const text = `${info.score}-${info.opponentScore}-${clock}-${info.quarter}`;
+      if (text === lastScoreboardText) return;
+      lastScoreboardText = text;
+      scoreboardContext.fillStyle = "#080d18";
+      scoreboardContext.fillRect(365, 55, 294, 290);
+      scoreboardContext.fillStyle = "#ffffff";
+      scoreboardContext.textAlign = "center";
+      scoreboardContext.font = "900 92px Arial";
+      scoreboardContext.fillText(`${info.score} : ${info.opponentScore}`, 512, 180);
+      scoreboardContext.fillStyle = "#fdb927";
+      scoreboardContext.font = "900 46px Arial";
+      scoreboardContext.fillText(clock, 512, 245);
+      scoreboardContext.font = "800 25px Arial";
+      scoreboardContext.fillText(`QUARTER ${info.quarter}`, 512, 295);
+      scoreboardTexture.needsUpdate = true;
+    };
     const screenMaterial = new THREE.MeshBasicMaterial({ map: scoreboardTexture });
     const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x151b26, metalness: .65, roughness: .3 });
     const screenCore = new THREE.Mesh(new THREE.BoxGeometry(8.4, 3.7, 4.8), frameMaterial);
@@ -343,7 +380,7 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
       cable.position.set(x, 5.3, 0);
       jumbotron.add(cable);
     });
-    jumbotron.position.set(0, 10.2, -5);
+    jumbotron.position.set(0, 13.2, -5);
     scene.add(jumbotron);
 
     const board = new THREE.Mesh(
@@ -354,7 +391,7 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
         opacity: 0.78,
       }),
     );
-    board.position.set(0, 4.2, -18);
+    board.position.set(0, 4.85, -18);
     board.castShadow = true;
     scene.add(board);
     const pole = new THREE.Mesh(
@@ -387,6 +424,9 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
     const referee = createReferee();
     scene.add(referee.group);
     const fullMatch = createFullMatchActors(scene, person);
+    createBasketballSidelines(scene, person);
+    const mascot = createBasketballMascot(scene);
+    const cheerleaders = createCheerleaders(scene);
 
     const player = person(0x2463d4);
     player.position.set(0, 0, 6);
@@ -588,7 +628,7 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
       const origin = heldPosition();
       ball.position.copy(origin);
       const distance = target.z - origin.z;
-      const flight = Math.max(1, Math.abs(distance) / 13);
+      const flight = Math.max(0.72, Math.abs(distance) / 17);
       velocity.set(
         (target.x - origin.x) / flight,
         (target.y - origin.y + 4.9 * flight * flight) / flight,
@@ -612,6 +652,9 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
       const dt = Math.min((now - last) / 1000, 0.035);
       last = now;
       animateBasketballCrowd(crowd, now, activeRef.current);
+      animateBasketballMascot(mascot, now, mascotVisibleRef.current);
+      animateCheerleaders(cheerleaders, now, mascotVisibleRef.current);
+      updateArenaScoreboard();
       animateReferee(referee, now);
       const opponentAttacking = updateFullMatch(
         fullMatch,
@@ -894,9 +937,12 @@ export function BasketballGame({ onExit }: BasketballGameProps) {
   const [active, setActive] = useState(false);
   const [score, setScore] = useState(0);
   const [opponentScore, setOpponentScore] = useState(0);
-  const [time, setTime] = useState(120);
+  const [time, setTime] = useState(240);
+  const [quarter, setQuarter] = useState(1);
+  const [quarterBreak, setQuarterBreak] = useState(false);
   const [charge, setCharge] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [waterBreak, setWaterBreak] = useState(false);
   const [message, setMessage] = useState("У кольца: Space + мышь — данк");
   const [best, setBest] = useState(
     () => Number(localStorage.getItem("swish-3d-best")) || 0,
@@ -910,25 +956,50 @@ export function BasketballGame({ onExit }: BasketballGameProps) {
     return () => button.remove();
   }, [onExit]);
   useEffect(() => {
-    if (!active) return;
+    if (!active || waterBreak || quarterBreak) return;
     const timer = window.setInterval(
       () =>
         setTime((value) => {
           if (value <= 1) {
-            setActive(false);
+            if (quarter < 4) setQuarterBreak(true);
+            else setActive(false);
             return 0;
           }
+          if (value === 161 || value === 81) setWaterBreak(true);
           return value - 1;
         }),
       1000,
     );
     return () => clearInterval(timer);
-  }, [active]);
+  }, [active, waterBreak, quarterBreak, quarter]);
+  useEffect(() => {
+    if (!waterBreak) return;
+    setMessage("💧 WATER BREAK — TEAMS ARE HYDRATING");
+    const resume = window.setTimeout(() => {
+      setWaterBreak(false);
+      setMessage("🏀 BACK TO THE GAME!");
+    }, 5000);
+    return () => clearTimeout(resume);
+  }, [waterBreak]);
+  useEffect(() => {
+    if (!quarterBreak) return;
+    setMessage(`🏀 END OF QUARTER ${quarter}`);
+    const nextQuarter = window.setTimeout(() => {
+      setQuarter((value) => value + 1);
+      setTime(240);
+      setQuarterBreak(false);
+      setMessage("🏀 NEXT QUARTER — PLAY!");
+    }, 6000);
+    return () => clearTimeout(nextQuarter);
+  }, [quarterBreak, quarter]);
   function start() {
     setScore(0);
     setOpponentScore(0);
-    setTime(120);
+    setTime(240);
+    setQuarter(1);
+    setQuarterBreak(false);
     setStreak(0);
+    setWaterBreak(false);
     setMessage("У кольца: Space + мышь — данк");
     setActive(true);
   }
@@ -957,7 +1028,12 @@ export function BasketballGame({ onExit }: BasketballGameProps) {
       </header>
       <section className="game3d-card">
         <ThreeCourt
-          active={active}
+          active={active && !waterBreak && !quarterBreak}
+          mascotVisible={waterBreak || quarterBreak}
+          score={score}
+          opponentScore={opponentScore}
+          time={time}
+          quarter={quarter}
           onCharge={setCharge}
           onMessage={setMessage}
           onScore={scored}
@@ -965,15 +1041,17 @@ export function BasketballGame({ onExit }: BasketballGameProps) {
         />
         <div className="game-status">
           <div className="score-square">
-            <small>LAKERS — СОПЕРНИК</small>
+            <small>LAKERS — GSW · Q{quarter}</small>
             <b>{score} : {opponentScore}</b>
           </div>
           <strong className="game-message">{message}</strong>
           <div className="time-badge">
             <small>ВРЕМЯ</small>
-            <b>{time}</b>
+            <b>{Math.floor(time / 60)}:{String(time % 60).padStart(2, "0")}</b>
           </div>
         </div>
+        {waterBreak && <div className="water-break"><span>💧</span><b>WATER BREAK</b><small>Players are hydrating · game resumes soon</small></div>}
+        {quarterBreak && <div className="water-break"><span>🏀</span><b>END OF QUARTER {quarter}</b><small>Next quarter starts soon</small></div>}
         <aside className="controls-panel">
           <h3>УПРАВЛЕНИЕ</h3>
           <p>

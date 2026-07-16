@@ -52,6 +52,10 @@
 .time-badge small { display: block; color: #9ba7ba; font-size: 6px; }
 .time-badge b { font-size: 13px; }
 .game-message { position: absolute; top: 100px; left: 50%; max-width: min(360px,70vw); padding: 6px 10px; border-radius: 8px; background: #101827b8; color: #ffad78; font-size: 9px; text-align: center; transform: translateX(-50%); }
+.water-break { position: absolute; z-index: 18; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 16vh; background: linear-gradient(#07101f99,#07101f33 70%); text-align: center; pointer-events: none; }
+.water-break span { font-size: 72px; filter: drop-shadow(0 12px 18px #48bce777); }
+.water-break b { margin-top: 10px; color: #6ed4fa; font-size: clamp(30px,5vw,54px); letter-spacing: 2px; }
+.water-break small { margin-top: 7px; color: #d6e2ec; font-size: 12px; }
 
 @media (max-width: 600px) {
   .game3d { width: 100%; padding: 0; }

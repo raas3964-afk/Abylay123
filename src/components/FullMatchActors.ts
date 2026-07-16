@@ -39,7 +39,7 @@ function createBasket(scene: THREE.Scene) {
     new THREE.BoxGeometry(4.1, 2.4, .16),
     new THREE.MeshStandardMaterial({ color: 0xf6fbff, transparent: true, opacity: .78 }),
   );
-  board.position.set(0, 4.2, 10);
+  board.position.set(0, 4.85, 10);
   const pole = new THREE.Mesh(
     new THREE.CylinderGeometry(.12, .17, 5.5, 16),
     new THREE.MeshStandardMaterial({ color: 0x313a4b }),
@@ -72,8 +72,8 @@ export function createFullMatchActors(scene: THREE.Scene, person: PersonFactory)
     return teammate;
   });
   const coaches = [
-    { color: 0x176b48, x: -6.7, z: 2, rotation: Math.PI / 2 },
-    { color: 0x172f83, x: 6.7, z: -10, rotation: -Math.PI / 2 },
+    { color: 0x176b48, x: -10.7, z: 2, rotation: Math.PI / 2 },
+    { color: 0x172f83, x: 10.7, z: -10, rotation: -Math.PI / 2 },
   ].map(({ color, x, z, rotation }) => {
     const coach = person(color);
     coach.position.set(x, 0, z);
