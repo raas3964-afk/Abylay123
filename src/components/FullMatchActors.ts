@@ -9,6 +9,9 @@ export type FullMatchActors = {
   attackStart: number;
   nextAttackAt: number;
   attackFinished: boolean;
+  screenUntil: number;
+  screenPlayerIndex: number;
+  screenPosition: THREE.Vector3;
 };
 
 function addJerseyName(player: THREE.Group, name: string) {
@@ -61,7 +64,7 @@ export function createFullMatchActors(scene: THREE.Scene, person: PersonFactory)
   const teammatePositions = [[4.4, -3], [3.8, 2]];
   const names = ['CURRY', 'LEBRON JAMES'];
   const teammates = teammatePositions.map(([x, z], index) => {
-    const teammate = person(0x22a86b);
+    const teammate = person(0x2463d4);
     teammate.position.set(x, 0, z);
     addJerseyName(teammate, names[index]);
     teammate.userData.role = names[index];
@@ -85,7 +88,16 @@ export function createFullMatchActors(scene: THREE.Scene, person: PersonFactory)
   );
   opponentBall.visible = false;
   scene.add(opponentBall);
-  return { teammates, coaches, opponentBall, attackStart: 0, nextAttackAt: performance.now() + 9000, attackFinished: false };
+  return { teammates, coaches, opponentBall, attackStart: 0, nextAttackAt: performance.now() + 9000, attackFinished: false, screenUntil: 0, screenPlayerIndex: 0, screenPosition: new THREE.Vector3() };
+}
+
+export function requestScreen(match: FullMatchActors, playerPosition: THREE.Vector3, now: number) {
+  if (match.attackStart || now < match.screenUntil) return false;
+  match.screenPlayerIndex = (match.screenPlayerIndex + 1) % match.teammates.length;
+  const side = match.screenPlayerIndex === 0 ? -1 : 1;
+  match.screenPosition.set(playerPosition.x + side * 1.05, 0, playerPosition.z - .65);
+  match.screenUntil = now + 2400;
+  return true;
 }
 
 export function updateFullMatch(
@@ -112,12 +124,17 @@ export function updateFullMatch(
     lebron.position.y = drive > .82 ? Math.sin((drive - .82) / .18 * Math.PI) * 1.65 : 0;
     lebron.rotation.y = Math.PI;
     match.teammates.forEach((teammate) => teammate.scale.lerp(new THREE.Vector3(1, 1, 1), .08));
+    if (now < match.screenUntil) {
+      const screener = match.teammates[match.screenPlayerIndex];
+      screener.position.lerp(match.screenPosition, .2);
+      screener.rotation.y = Math.PI / 2;
+    }
   }
   if (!match.attackStart && now >= match.nextAttackAt) {
     match.attackStart = now;
     match.attackFinished = false;
     match.opponentBall.visible = true;
-    onMessage('🔄 СМЕНА ВЛАДЕНИЯ — СОПЕРНИК АТАКУЕТ!');
+    onMessage('🛡️ ЗАЩИТА: Space — блок, Shift рядом — перехват');
   }
   if (!match.attackStart) return false;
 

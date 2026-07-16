@@ -5,8 +5,9 @@ import {
   createBasketballCrowd,
 } from "./BasketballCrowd";
 import { animateReferee, createReferee, signalFoul } from "./BasketballReferee";
-import { createFullMatchActors, updateFullMatch } from "./FullMatchActors";
+import { createFullMatchActors, requestScreen, updateFullMatch } from "./FullMatchActors";
 import "./BasketballGameHeader.css";
+import "./BasketballFullscreen.css";
 
 type Props = {
   active: boolean;
@@ -18,6 +19,7 @@ type Props = {
 
 function person(color: number) {
   const group = new THREE.Group();
+  const skinMaterial = new THREE.MeshStandardMaterial({ color: 0x9b5d38 });
   const shirt = new THREE.Mesh(
     new THREE.CapsuleGeometry(0.38, 0.72, 6, 12),
     new THREE.MeshStandardMaterial({ color }),
@@ -25,7 +27,7 @@ function person(color: number) {
   shirt.position.y = 1.3;
   const head = new THREE.Mesh(
     new THREE.SphereGeometry(0.25, 20, 20),
-    new THREE.MeshStandardMaterial({ color: 0x9b5d38 }),
+    skinMaterial,
   );
   head.position.y = 2.08;
   const legs = [-0.2, 0.2].map((x) => {
@@ -36,11 +38,82 @@ function person(color: number) {
     leg.position.set(x, 0.42, 0);
     return leg;
   });
-  group.add(shirt, head, ...legs);
+  const arms = [-1, 1].map((side) => {
+    const arm = new THREE.Mesh(
+      new THREE.CapsuleGeometry(0.09, 0.62, 5, 9),
+      skinMaterial,
+    );
+    arm.position.set(side * 0.48, 1.3, 0);
+    arm.rotation.z = side * -0.22;
+    arm.name = side < 0 ? "leftArm" : "rightArm";
+    return arm;
+  });
+  group.add(shirt, head, ...legs, ...arms);
   group.traverse((item) => {
     if (item instanceof THREE.Mesh) item.castShadow = true;
   });
   return group;
+}
+
+function bannerTexture(title: string, subtitle: string, colors: [string, string]) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 320;
+  const context = canvas.getContext("2d");
+  if (context) {
+    const gradient = context.createLinearGradient(0, 0, 1024, 0);
+    gradient.addColorStop(0, colors[0]);
+    gradient.addColorStop(1, colors[1]);
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, 1024, 320);
+    context.strokeStyle = "#f4c34f";
+    context.lineWidth = 14;
+    context.strokeRect(10, 10, 1004, 300);
+    context.textAlign = "center";
+    context.fillStyle = "#ffffff";
+    context.font = "900 86px Arial";
+    context.fillText(title, 512, 155);
+    context.fillStyle = "#f4c34f";
+    context.font = "800 34px Arial";
+    context.fillText(subtitle, 512, 225);
+  }
+  return new THREE.CanvasTexture(canvas);
+}
+
+function nbaFlagTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 600;
+  canvas.height = 900;
+  const context = canvas.getContext("2d");
+  if (context) {
+    context.fillStyle = "#17408b";
+    context.fillRect(0, 0, 300, 900);
+    context.fillStyle = "#c9082a";
+    context.fillRect(300, 0, 300, 900);
+    context.strokeStyle = "#ffffff";
+    context.lineWidth = 18;
+    context.strokeRect(12, 12, 576, 876);
+    context.fillStyle = "#ffffff";
+    context.beginPath();
+    context.arc(325, 185, 62, 0, Math.PI * 2);
+    context.fill();
+    context.beginPath();
+    context.moveTo(300, 245);
+    context.quadraticCurveTo(235, 350, 265, 500);
+    context.lineTo(210, 690);
+    context.lineTo(290, 705);
+    context.lineTo(345, 535);
+    context.lineTo(405, 690);
+    context.lineTo(480, 655);
+    context.lineTo(385, 455);
+    context.lineTo(410, 300);
+    context.closePath();
+    context.fill();
+    context.font = "900 110px Arial";
+    context.textAlign = "center";
+    context.fillText("NBA", 300, 835);
+  }
+  return new THREE.CanvasTexture(canvas);
 }
 
 function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: Props) {
@@ -58,37 +131,120 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
     if (!mount.current) return;
     const host = mount.current;
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x9ed8f5);
-    scene.fog = new THREE.Fog(0x9ed8f5, 25, 55);
+    scene.background = new THREE.Color(0x070b14);
+    scene.fog = new THREE.Fog(0x070b14, 68, 115);
     const camera = new THREE.PerspectiveCamera(
-      48,
+      54,
       host.clientWidth / host.clientHeight,
       0.1,
       100,
     );
-    camera.position.set(0, 7.5, 15);
-    camera.lookAt(0, 2, -7);
+    camera.position.set(20.5, 21, 19.5);
+    camera.lookAt(0, 0.8, -5);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.setSize(host.clientWidth, host.clientHeight);
     renderer.shadowMap.enabled = true;
     host.appendChild(renderer.domElement);
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x5e7045, 2.2));
-    const sun = new THREE.DirectionalLight(0xffffff, 2.5);
-    sun.position.set(-8, 14, 8);
-    sun.castShadow = true;
-    scene.add(sun);
+    scene.add(new THREE.HemisphereLight(0xaecbff, 0x11131a, .9));
+    const arenaShellMaterial = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: .88, side: THREE.DoubleSide });
+    const arenaShell = [
+      [72, 1, 62, 0, 24, -5],
+      [1, 28, 62, -35, 10, -5],
+      [1, 28, 62, 35, 10, -5],
+      [72, 28, 1, 0, 10, -36],
+      [72, 28, 1, 0, 10, 26],
+    ];
+    arenaShell.forEach(([width, height, depth, x, y, z]) => {
+      const part = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), arenaShellMaterial);
+      part.position.set(x, y, z);
+      scene.add(part);
+    });
+    const legends = [
+      ["STEPHEN CURRY", "THE GREATEST SHOOTER", -15, "#1d428a", "#0b2048"],
+      ["KYRIE IRVING", "MASTER OF THE HANDLE", 0, "#143c36", "#071b19"],
+      ["LAMELO BALL", "THE FUTURE OF THE GAME", 15, "#1d8b9f", "#4b2082"],
+    ] as const;
+    legends.forEach(([name, subtitle, x, firstColor, secondColor]) => {
+      const banner = new THREE.Mesh(
+        new THREE.PlaneGeometry(11.5, 3.6),
+        new THREE.MeshBasicMaterial({ map: bannerTexture(name, subtitle, [firstColor, secondColor]) }),
+      );
+      banner.position.set(x, 16.5, -35.42);
+      scene.add(banner);
+    });
+    const nbaFlag = new THREE.Mesh(
+      new THREE.PlaneGeometry(6.8, 10.2),
+      new THREE.MeshBasicMaterial({ map: nbaFlagTexture(), side: THREE.DoubleSide }),
+    );
+    nbaFlag.position.set(0, 17.2, -8.5);
+    nbaFlag.rotation.y = -.12;
+    scene.add(nbaFlag);
+    const lightPanelMaterial = new THREE.MeshBasicMaterial({ color: 0xaebfd3 });
+    [-16, 0, 16].forEach((z) => {
+      [-10, 10].forEach((x) => {
+        const panel = new THREE.Mesh(new THREE.BoxGeometry(7, .18, 2.3), lightPanelMaterial);
+        panel.position.set(x, 22.8, z - 5);
+        scene.add(panel);
+        const spotlight = new THREE.SpotLight(0xdcecff, 190, 48, .62, .65, 1.35);
+        spotlight.position.set(x, 22, z - 5);
+        spotlight.target.position.set(x * .25, 0, z * .55 - 5);
+        spotlight.castShadow = true;
+        scene.add(spotlight, spotlight.target);
+      });
+    });
 
     const floor = new THREE.Mesh(
-      new THREE.BoxGeometry(15, 0.25, 31),
+      new THREE.BoxGeometry(28, 0.25, 52),
       new THREE.MeshStandardMaterial({ color: 0xc98548, roughness: 0.75 }),
     );
     floor.position.set(0, -0.15, -5);
     floor.receiveShadow = true;
     scene.add(floor);
-    const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffe1b8 });
+    const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffe1b8, side: THREE.DoubleSide });
+    const zoneMaterial = new THREE.MeshBasicMaterial({ color: 0x315ea8, transparent: true, opacity: .22 });
+    const courtLines = [
+      [19, .07, .08, 0, -19.4],
+      [19, .07, .08, 0, 11.4],
+      [.08, .07, 30.8, -9.5, -4],
+      [.08, .07, 30.8, 9.5, -4],
+    ];
+    courtLines.forEach(([width, height, depth, x, z]) => {
+      const line = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), lineMaterial);
+      line.position.set(x, .02, z);
+      scene.add(line);
+    });
+    const paddingMaterial = new THREE.MeshStandardMaterial({ color: 0x202b40, roughness: .8 });
+    [-20.2, 12.2].forEach((z) => {
+      const safetyBarrier = new THREE.Mesh(new THREE.BoxGeometry(11, 1.25, .45), paddingMaterial);
+      safetyBarrier.position.set(0, .55, z);
+      safetyBarrier.castShadow = true;
+      scene.add(safetyBarrier);
+    });
+    [-16.9, 8.9].forEach((basketZ, index) => {
+      const key = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 6.4), zoneMaterial);
+      key.rotation.x = -Math.PI / 2;
+      key.position.set(0, .015, basketZ + (index === 0 ? 3.2 : -3.2));
+      scene.add(key);
+      const arc = new THREE.Mesh(new THREE.RingGeometry(7.45, 7.58, 72, 1, 0, Math.PI), lineMaterial);
+      arc.rotation.x = index === 0 ? Math.PI / 2 : -Math.PI / 2;
+      arc.position.set(0, .035, basketZ);
+      scene.add(arc);
+      [-7.51, 7.51].forEach((x) => {
+        const cornerLine = new THREE.Mesh(new THREE.BoxGeometry(.07, .05, 4.1), lineMaterial);
+        cornerLine.position.set(x, .03, basketZ + (index === 0 ? 2.05 : -2.05));
+        scene.add(cornerLine);
+      });
+      const freeThrowZ = basketZ + (index === 0 ? 6.4 : -6.4);
+      const freeThrowLine = new THREE.Mesh(new THREE.BoxGeometry(5.2, .06, .1), lineMaterial);
+      freeThrowLine.position.set(0, .035, freeThrowZ);
+      const freeThrowCircle = new THREE.Mesh(new THREE.TorusGeometry(1.8, .055, 8, 48), lineMaterial);
+      freeThrowCircle.rotation.x = Math.PI / 2;
+      freeThrowCircle.position.set(0, .04, freeThrowZ);
+      scene.add(freeThrowLine, freeThrowCircle);
+    });
     const centerLine = new THREE.Mesh(
-      new THREE.BoxGeometry(0.06, 0.02, 30),
+      new THREE.BoxGeometry(0.06, 0.02, 19),
       lineMaterial,
     );
     centerLine.rotation.y = Math.PI / 2;
@@ -98,8 +254,97 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
       lineMaterial,
     );
     circle.rotation.x = Math.PI / 2;
-    circle.position.y = 0.02;
+    circle.position.set(0, 0.02, -5);
     scene.add(circle);
+
+    const jumbotron = new THREE.Group();
+    const scoreboardCanvas = document.createElement('canvas');
+    scoreboardCanvas.width = 1024;
+    scoreboardCanvas.height = 400;
+    const scoreboardContext = scoreboardCanvas.getContext('2d');
+    if (scoreboardContext) {
+      const gradient = scoreboardContext.createLinearGradient(0, 0, 1024, 0);
+      gradient.addColorStop(0, '#552583');
+      gradient.addColorStop(.48, '#121a2c');
+      gradient.addColorStop(.52, '#121a2c');
+      gradient.addColorStop(1, '#1d428a');
+      scoreboardContext.fillStyle = gradient;
+      scoreboardContext.fillRect(0, 0, 1024, 400);
+      scoreboardContext.fillStyle = '#fdb927';
+      scoreboardContext.beginPath();
+      scoreboardContext.arc(180, 175, 105, 0, Math.PI * 2);
+      scoreboardContext.fill();
+      scoreboardContext.strokeStyle = '#552583';
+      scoreboardContext.lineWidth = 8;
+      scoreboardContext.beginPath();
+      scoreboardContext.arc(180, 175, 105, -.7, .7);
+      scoreboardContext.moveTo(75, 175);
+      scoreboardContext.lineTo(285, 175);
+      scoreboardContext.moveTo(180, 70);
+      scoreboardContext.quadraticCurveTo(130, 175, 180, 280);
+      scoreboardContext.stroke();
+      scoreboardContext.fillStyle = '#552583';
+      scoreboardContext.font = 'italic 900 45px Arial';
+      scoreboardContext.textAlign = 'center';
+      scoreboardContext.fillText('LAKERS', 180, 191);
+      scoreboardContext.strokeStyle = '#fdb927';
+      scoreboardContext.lineWidth = 7;
+      [0, 1, 2].forEach((line) => {
+        scoreboardContext.beginPath();
+        scoreboardContext.moveTo(42, 132 + line * 30);
+        scoreboardContext.lineTo(92, 132 + line * 30);
+        scoreboardContext.stroke();
+      });
+      scoreboardContext.fillStyle = '#fdb927';
+      scoreboardContext.beginPath();
+      scoreboardContext.arc(842, 175, 112, 0, Math.PI * 2);
+      scoreboardContext.fill();
+      scoreboardContext.strokeStyle = '#1d428a';
+      scoreboardContext.lineWidth = 12;
+      scoreboardContext.beginPath();
+      scoreboardContext.arc(842, 175, 96, 0, Math.PI * 2);
+      scoreboardContext.stroke();
+      scoreboardContext.fillStyle = '#1d428a';
+      scoreboardContext.fillRect(772, 185, 140, 10);
+      scoreboardContext.fillRect(790, 145, 104, 9);
+      scoreboardContext.fillRect(806, 112, 72, 8);
+      [790, 815, 842, 869, 894].forEach((x, index) => {
+        scoreboardContext.beginPath();
+        scoreboardContext.moveTo(x, 105 + Math.abs(2 - index) * 18);
+        scoreboardContext.lineTo(x - 16 + index * 8, 235);
+        scoreboardContext.lineWidth = 7;
+        scoreboardContext.stroke();
+      });
+      scoreboardContext.fillStyle = '#fff';
+      scoreboardContext.font = '900 38px Arial';
+      scoreboardContext.fillText('LAKERS', 205, 350);
+      scoreboardContext.fillText('VS', 512, 210);
+      scoreboardContext.fillText('GOLDEN STATE', 805, 350);
+    }
+    const scoreboardTexture = new THREE.CanvasTexture(scoreboardCanvas);
+    const screenMaterial = new THREE.MeshBasicMaterial({ map: scoreboardTexture });
+    const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x151b26, metalness: .65, roughness: .3 });
+    const screenCore = new THREE.Mesh(new THREE.BoxGeometry(8.4, 3.7, 4.8), frameMaterial);
+    jumbotron.add(screenCore);
+    [[0, 0, 2.43, 0], [0, 0, -2.43, Math.PI]].forEach(([x, y, z, rotation]) => {
+      const screen = new THREE.Mesh(new THREE.PlaneGeometry(7.6, 3), screenMaterial);
+      screen.position.set(x, y, z);
+      screen.rotation.y = rotation;
+      jumbotron.add(screen);
+    });
+    [[4.23, 0, 0, Math.PI / 2], [-4.23, 0, 0, -Math.PI / 2]].forEach(([x, y, z, rotation]) => {
+      const screen = new THREE.Mesh(new THREE.PlaneGeometry(4.1, 3), screenMaterial);
+      screen.position.set(x, y, z);
+      screen.rotation.y = rotation;
+      jumbotron.add(screen);
+    });
+    [-3.2, 3.2].forEach((x) => {
+      const cable = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, 7, 8), frameMaterial);
+      cable.position.set(x, 5.3, 0);
+      jumbotron.add(cable);
+    });
+    jumbotron.position.set(0, 10.2, -5);
+    scene.add(jumbotron);
 
     const board = new THREE.Mesh(
       new THREE.BoxGeometry(4.1, 2.4, 0.16),
@@ -143,10 +388,10 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
     scene.add(referee.group);
     const fullMatch = createFullMatchActors(scene, person);
 
-    const player = person(0xf4772d);
+    const player = person(0x2463d4);
     player.position.set(0, 0, 6);
     scene.add(player);
-    const teammate = person(0x22a86b);
+    const teammate = person(0x2463d4);
     teammate.position.set(-4.5, 0, 5);
     scene.add(teammate);
     const teammateBall = new THREE.Mesh(
@@ -155,8 +400,18 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
     );
     teammateBall.visible = false;
     scene.add(teammateBall);
+    const teamRoster = [player, teammate, ...fullMatch.teammates];
+    const rosterNames = ["PLAYER", "PARTNER", "CURRY", "LEBRON JAMES"];
+    let selectedPlayer = 0;
+    const playerMarker = new THREE.Mesh(
+      new THREE.RingGeometry(.55, .72, 28),
+      new THREE.MeshBasicMaterial({ color: 0xffe84a, side: THREE.DoubleSide }),
+    );
+    playerMarker.rotation.x = -Math.PI / 2;
+    playerMarker.position.y = .025;
+    player.add(playerMarker);
     const defenders = [-4, -6.5, -9, -11.5, -13].map((z, index) => {
-      const defender = person(index === 1 ? 0x2949b8 : 0x3056d3);
+      const defender = person(index === 1 ? 0xb91f32 : 0xe23845);
       defender.position.set((index - 2) * 2.2, 0, z);
       defender.rotation.y = Math.PI;
       scene.add(defender);
@@ -183,6 +438,7 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
     let crossoverReady = 0;
     let stealReady = 0;
     let foulReady = 0;
+    let defenseReady = 0;
     let foulCount = 0;
     let partnerRunStart = 0;
     let partnerPassBackStart = 0;
@@ -199,6 +455,28 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
 
     const keyDown = (event: KeyboardEvent) => {
       keys.add(event.code);
+      const numberIndex = event.code.startsWith("Digit") ? Number(event.code.slice(5)) - 1 : -1;
+      if (event.code === "Tab" || (numberIndex >= 0 && numberIndex < teamRoster.length)) {
+        event.preventDefault();
+        const nextIndex = event.code === "Tab" ? (selectedPlayer + 1) % teamRoster.length : numberIndex;
+        if (nextIndex !== selectedPlayer) {
+          const target = teamRoster[nextIndex];
+          const previousPosition = player.position.clone();
+          const previousRotation = player.rotation.y;
+          player.position.copy(target.position);
+          player.rotation.y = target.rotation.y;
+          target.position.copy(previousPosition);
+          target.rotation.y = previousRotation;
+          selectedPlayer = nextIndex;
+          callbacks.current.onMessage(`🎮 ТЫ ИГРАЕШЬ ЗА ${rosterNames[selectedPlayer]}`);
+        }
+      }
+      if (event.code === "KeyF" && activeRef.current) {
+        const screenStarted = requestScreen(fullMatch, player.position, performance.now());
+        callbacks.current.onMessage(
+          screenStarted ? "🧱 ЗАСЛОН ПОСТАВЛЕН — ПРОХОДИ К КОЛЬЦУ!" : "Заслон пока недоступен",
+        );
+      }
       if (event.code === "Space" && playerY === 0) jumpVelocity = 7.2;
       if (
         event.code === "KeyQ" &&
@@ -293,7 +571,19 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
         }, 350);
         return;
       }
-      const target = new THREE.Vector3(0, 3.48 + (power - 62) * 0.025, -16.9);
+      const shotDistance = Math.hypot(player.position.x, player.position.z + 16.9);
+      const longRangeDifficulty = freeThrow
+        ? 0
+        : THREE.MathUtils.clamp((shotDistance - 14) / 13, 0, 1);
+      const idealPowerError = Math.abs(power - 62);
+      const accuracyWindow = THREE.MathUtils.lerp(10, 3, longRangeDifficulty);
+      const extraPowerError = Math.max(0, idealPowerError - accuracyWindow);
+      const horizontalSpread = longRangeDifficulty * (0.28 + extraPowerError * 0.055);
+      const target = new THREE.Vector3(
+        (Math.random() * 2 - 1) * horizontalSpread,
+        3.48 + (power - 62) * 0.025,
+        -16.9,
+      );
       shotPoints = freeThrow ? 1 : 2;
       const origin = heldPosition();
       ball.position.copy(origin);
@@ -348,18 +638,38 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
             5.8,
           );
           if (now < stepBackUntil)
-            player.position.z = Math.min(9, player.position.z + 12 * dt);
+            player.position.z = Math.min(7.8, player.position.z + 12 * dt);
           else
             player.position.z = THREE.MathUtils.clamp(
               player.position.z + forward * 5.1 * dt,
-              -15.2,
-              9,
+              -15.8,
+              7.8,
             );
         }
         jumpVelocity -= 16 * dt;
         playerY = Math.max(0, playerY + jumpVelocity * dt);
         if (playerY === 0) jumpVelocity = 0;
         player.position.y = playerY;
+        if (opponentAttacking && now > defenseReady) {
+          const attacker = defenders[4];
+          const distanceToAttacker = Math.hypot(
+            player.position.x - attacker.position.x,
+            player.position.z - attacker.position.z,
+          );
+          const playerHands = player.position.clone().add(new THREE.Vector3(0, 1.8, 0));
+          const blocked = playerY > .38 && playerHands.distanceTo(fullMatch.opponentBall.position) < 1.45;
+          const stole = (keys.has("ShiftLeft") || keys.has("ShiftRight")) && distanceToAttacker < 1.15;
+          if (blocked || stole) {
+            defenseReady = now + 1800;
+            fullMatch.attackStart = 0;
+            fullMatch.nextAttackAt = now + 9000;
+            fullMatch.opponentBall.visible = false;
+            attacker.position.set(4.5, 0, -13);
+            callbacks.current.onMessage(
+              blocked ? "🖐️ БЛОК! LAKERS ЗАЩИТИЛИ КОЛЬЦО" : "⚡ ПЕРЕХВАТ! МЯЧ У LAKERS",
+            );
+          }
+        }
         defenders.forEach((defender, index) => {
           if (index === 4 && opponentAttacking) return;
           if (freeThrow) {
@@ -389,6 +699,13 @@ function ThreeCourt({ active, onScore, onOpponentScore, onCharge, onMessage }: P
           defender.position.y = charging
             ? Math.abs(Math.sin(now * 0.009 + index)) * (0.55 + index * 0.12)
             : 0;
+          if (now < fullMatch.screenUntil) {
+            const screener = fullMatch.teammates[fullMatch.screenPlayerIndex];
+            if (defender.position.distanceTo(screener.position) < 1.35) {
+              defender.position.x += (defender.position.x <= screener.position.x ? -1 : 1) * dt * 2.8;
+              defender.position.z += dt * 1.4;
+            }
+          }
         });
         if (
           !flying &&
@@ -646,13 +963,13 @@ export function BasketballGame({ onExit }: BasketballGameProps) {
           onScore={scored}
           onOpponentScore={(points) => setOpponentScore((value) => value + points)}
         />
-        <div className="hud">
-          <div>
+        <div className="game-status">
+          <div className="score-square">
             <small>LAKERS — СОПЕРНИК</small>
             <b>{score} : {opponentScore}</b>
           </div>
-          <strong>{message}</strong>
-          <div>
+          <strong className="game-message">{message}</strong>
+          <div className="time-badge">
             <small>ВРЕМЯ</small>
             <b>{time}</b>
           </div>
@@ -687,7 +1004,15 @@ export function BasketballGame({ onExit }: BasketballGameProps) {
           </p>
           <p>
             <kbd>SPACE</kbd>
-            <span>Прыжок / данк</span>
+            <span>Прыжок / данк / блок</span>
+          </p>
+          <p>
+            <kbd>TAB</kbd>
+            <span>Сменить игрока</span>
+          </p>
+          <p>
+            <kbd>F</kbd>
+            <span>Поставить заслон</span>
           </p>
           <p>
             <i>🖱️</i>

@@ -1,0 +1,67 @@
+.game3d {
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.game3d > header {
+  position: fixed;
+  z-index: 20;
+  top: 14px;
+  left: 18px;
+  width: auto;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid #ffffff24;
+  border-radius: 13px;
+  background: #101827df;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px #0005;
+}
+
+.game3d > header > p {
+  display: none;
+}
+
+.game3d-card {
+  width: 100%;
+  height: 100vh;
+  min-height: 0;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.game-exit-button {
+  top: 20px;
+  right: 18px;
+  padding: 11px 16px;
+  border-color: #ffffff35;
+  background: #101827e8;
+  backdrop-filter: blur(10px);
+}
+
+.game-status { position: absolute; z-index: 8; inset: 0; pointer-events: none; }
+.score-square { position: absolute; top: 10px; left: 50%; display: flex; width: 82px; height: 82px; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #ffffff35; border-radius: 12px; background: #101827e8; backdrop-filter: blur(9px); box-shadow: 0 8px 25px #0007; transform: translateX(-50%); text-align: center; }
+.score-square small { max-width: 68px; color: #aeb8c8; font-size: 6px; line-height: 1.2; letter-spacing: .4px; }
+.score-square b { margin-top: 4px; color: #fff; font-size: 20px; }
+.time-badge { position: absolute; top: 19px; left: calc(50% + 52px); min-width: 45px; padding: 7px; border: 1px solid #ffffff25; border-radius: 9px; background: #101827cf; text-align: center; }
+.time-badge small { display: block; color: #9ba7ba; font-size: 6px; }
+.time-badge b { font-size: 13px; }
+.game-message { position: absolute; top: 100px; left: 50%; max-width: min(360px,70vw); padding: 6px 10px; border-radius: 8px; background: #101827b8; color: #ffad78; font-size: 9px; text-align: center; transform: translateX(-50%); }
+
+@media (max-width: 600px) {
+  .game3d { width: 100%; padding: 0; }
+  .game3d > header { top: 8px; left: 8px; height: 42px; padding: 0 9px; }
+  .game3d > header span { font-size: 24px; }
+  .game3d > header h1 { font-size: 15px; }
+  .game3d-card { height: 100vh; min-height: 0; }
+  .game-exit-button { top: 11px; right: 8px; }
+  .score-square { top: 7px; width: 70px; height: 70px; }
+  .score-square b { font-size: 17px; }
+  .time-badge { top: 12px; left: calc(50% + 44px); }
+  .game-message { top: 84px; font-size: 8px; }
+}

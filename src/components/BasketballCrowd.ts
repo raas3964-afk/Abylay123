@@ -35,20 +35,54 @@ function makeFan(index: number) {
   return fan;
 }
 
+function makeTeamFlag(team: 'LAKERS' | 'GOLDEN STATE') {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 256;
+  const context = canvas.getContext('2d');
+  if (context) {
+    const isLakers = team === 'LAKERS';
+    context.fillStyle = isLakers ? '#552583' : '#1d428a';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = '#fdb927';
+    context.beginPath();
+    context.arc(118, 128, 78, 0, Math.PI * 2);
+    context.fill();
+    context.strokeStyle = isLakers ? '#552583' : '#1d428a';
+    context.lineWidth = 9;
+    context.beginPath();
+    context.arc(118, 128, 61, 0, Math.PI * 2);
+    context.stroke();
+    context.fillStyle = isLakers ? '#552583' : '#1d428a';
+    context.font = '900 35px Arial';
+    context.textAlign = 'center';
+    context.fillText(isLakers ? 'LA' : 'GS', 118, 141);
+    context.fillStyle = '#ffffff';
+    context.font = 'italic 900 44px Arial';
+    context.fillText(team, 340, 143);
+  }
+  const material = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), side: THREE.DoubleSide });
+  return new THREE.Mesh(new THREE.PlaneGeometry(4.6, 2.3, 8, 3), material);
+}
+
 export function createBasketballCrowd(): Crowd {
   const group = new THREE.Group();
   const fans: THREE.Group[] = [];
   const standMaterial = new THREE.MeshStandardMaterial({ color: 0x30394c, roughness: .9 });
 
+  const rowCount = 9;
+  const seatsPerRow = 26;
+  const standLength = 55;
+
   [-1, 1].forEach((side) => {
-    for (let row = 0; row < 3; row += 1) {
-      const stand = new THREE.Mesh(new THREE.BoxGeometry(2.1, .45, 29), standMaterial);
-      stand.position.set(side * (8.1 + row * .72), row * .55, -5);
+    for (let row = 0; row < rowCount; row += 1) {
+      const stand = new THREE.Mesh(new THREE.BoxGeometry(2.1, .45, standLength), standMaterial);
+      stand.position.set(side * (14.6 + row * .72), row * .55, -5);
       group.add(stand);
 
-      for (let seat = 0; seat < 14; seat += 1) {
-        const fan = makeFan(row * 28 + seat * 2 + (side > 0 ? 1 : 0));
-        fan.position.set(side * (7.65 + row * .72), .32 + row * .55, 8.2 - seat * 2.02);
+      for (let seat = 0; seat < seatsPerRow; seat += 1) {
+        const fan = makeFan(row * seatsPerRow * 2 + seat * 2 + (side > 0 ? 1 : 0));
+        fan.position.set(side * (14.15 + row * .72), .32 + row * .55, 20.2 - seat * 2.02);
         fan.rotation.y = side * Math.PI / 2;
         fan.scale.setScalar(.82);
         fan.userData.phase = row * .8 + seat * .47 + (side > 0 ? 1.2 : 0);
@@ -57,6 +91,19 @@ export function createBasketballCrowd(): Crowd {
         group.add(fan);
       }
     }
+
+    [-17, -5, 7, 19].forEach((z, index) => {
+      const flag = makeTeamFlag(index % 2 === 0 ? 'LAKERS' : 'GOLDEN STATE');
+      flag.position.set(side * 14.02, 4.2 + (index % 2) * .45, z);
+      flag.rotation.y = side * Math.PI / 2;
+      group.add(flag);
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(.045, .045, 3.2, 8),
+        new THREE.MeshStandardMaterial({ color: 0xcbd3df, metalness: .7 }),
+      );
+      pole.position.set(side * 14.08, 3.2 + (index % 2) * .45, z - 2.25);
+      group.add(pole);
+    });
   });
 
   return { group, fans };
