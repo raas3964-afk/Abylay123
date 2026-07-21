@@ -16,6 +16,15 @@
     transform: none;
   }
 
+  .home-welcome .home-play {
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  .home-welcome .home-stats {
+    margin-top: 10px;
+  }
+
   .streak-card {
     grid-column: 2;
     grid-row: 1;

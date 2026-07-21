@@ -97,6 +97,21 @@ export function HomePage({ onPlay, onLogout }: Props) {
               <span><b>RED</b>DEFENSE</span>
             </div>
           </div>
+          <button
+            className="home-play"
+            id="play-button"
+            disabled={!homeTeam || !awayTeam}
+            onClick={() => homeTeam && awayTeam && onPlay(gameMode, homeTeam, awayTeam)}
+            aria-label={`Играть в режиме ${gameMode}`}
+          >
+            <span><small>РЕЖИМ {gameMode}</small>{homeTeam && awayTeam ? 'Играть сейчас' : 'Выбери команды'}</span>
+            <i>→</i>
+          </button>
+          <div className="home-stats">
+            <span><b>{gameMode}</b>ВЫБРАННЫЙ РЕЖИМ</span>
+            <span><b>3D</b>LIVE ARENA</span>
+            <span><b>∞</b>SHOTS</span>
+          </div>
         </div>
 
         <div className="streak-card" aria-label={`${streak} day login streak`}>
@@ -129,21 +144,6 @@ export function HomePage({ onPlay, onLogout }: Props) {
           onAwayChange={setAwayTeam}
         />
 
-        <button
-          className="home-play"
-          id="play-button"
-          disabled={!homeTeam || !awayTeam}
-          onClick={() => homeTeam && awayTeam && onPlay(gameMode, homeTeam, awayTeam)}
-          aria-label={`Играть в режиме ${gameMode}`}
-        >
-          <span><small>РЕЖИМ {gameMode}</small>{homeTeam && awayTeam ? 'Играть сейчас' : 'Выбери команды'}</span>
-          <i>→</i>
-        </button>
-        <div className="home-stats">
-          <span><b>{gameMode}</b>ВЫБРАННЫЙ РЕЖИМ</span>
-          <span><b>3D</b>LIVE ARENA</span>
-          <span><b>∞</b>SHOTS</span>
-        </div>
       </section>
 
       <nav className="home-nav" aria-label="Main menu">
