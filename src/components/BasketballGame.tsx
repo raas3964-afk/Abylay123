@@ -922,7 +922,7 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
         referee.group.position.x = THREE.MathUtils.lerp(6.7, 0, walkProgress);
         referee.group.position.z = 1.7;
         if (progress < .38) {
-          ball.position.set(referee.group.position.x - .45, 1.75, 1.2);
+          ball.position.set(0, 1.75, 0);
         } else {
           const tossProgress = (progress - .38) / .62;
           const jump = tossProgress > .38
@@ -931,7 +931,7 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
           player.position.y = jump;
           tipOpponent.position.y = jump;
           ball.position.set(
-            THREE.MathUtils.lerp(0, player.position.x + .25, tossProgress),
+            0,
             2.1 + Math.sin(tossProgress * Math.PI) * 3.3 + jump * .35,
             0,
           );
