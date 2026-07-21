@@ -80,12 +80,6 @@ export function HomePage({ onPlay, onLogout }: Props) {
         <div className="legend-banner kyrie"><b>KYRIE IRVING</b><span>HANDLE MASTER</span></div>
         <div className="legend-banner lamelo"><b>LAMELO BALL</b><span>FUTURE STAR</span></div>
       </section>
-      <section className="legend-speeches" aria-label="Messages from basketball players">
-        <p><b>CURRY</b><span>«Тренируй бросок каждый день!»</span></p>
-        <p><b>KYRIE</b><span>«Контролируй мяч — контролируй игру!»</span></p>
-        <p><b>LAMELO</b><span>«Играй смело и верь в команду!»</span></p>
-      </section>
-
       <section className="home-hero">
         <div className="home-welcome">
           <small>WELCOME TO THE COURT</small>

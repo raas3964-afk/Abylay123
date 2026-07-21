@@ -2,3 +2,14 @@
   overflow-x: hidden;
   overflow-y: auto;
 }
+
+/* Keep the welcome copy directly below the three legend cards. */
+@media (min-width: 601px) {
+  .home-hero {
+    margin-top: 8px;
+  }
+
+  .home-welcome {
+    align-self: start;
+  }
+}
