@@ -6,7 +6,6 @@ import "./PregameShow.css";
 type Props = { homeTeam: string; awayTeam: string; homeColor: string; awayColor: string; homeLogo: string; awayLogo: string; homeStar: string; awayStar: string; onComplete: () => void };
 
 const PLAYERS = ["CURRY", "LEBRON", "PLAYER", "PARTNER"];
-const PLAYER_MESSAGES = ["МЫ ГОТОВЫ!", "ИГРАЕМ ВМЕСТЕ!", "ВПЕРЁД К ПОБЕДЕ!"];
 
 export function PregameShow({ homeTeam, awayTeam, homeColor, awayColor, homeLogo, awayLogo, homeStar, awayStar, onComplete }: Props) {
   const [elapsed, setElapsed] = useState(0);
@@ -62,9 +61,6 @@ export function PregameShow({ homeTeam, awayTeam, homeColor, awayColor, homeLogo
                 "--player-lane": index - 3.5,
               } as CSSProperties}
             >
-              {index < PLAYER_MESSAGES.length && (
-                <span className="player-speech">{PLAYER_MESSAGES[index]}</span>
-              )}
               <div className="show-player-head" />
               <div className="show-player-body" style={{ background: homeColor }}>{index + 1}</div>
               <b>{name}</b>
