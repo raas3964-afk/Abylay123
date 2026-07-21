@@ -18,14 +18,14 @@ function teamSign(text: string, background: string) {
   return new THREE.CanvasTexture(canvas);
 }
 
-export function createBasketballSidelines(scene: THREE.Scene, person: PersonFactory) {
+export function createBasketballSidelines(scene: THREE.Scene, person: PersonFactory, homeTeam: string, awayTeam: string, homeColor: number, awayColor: number) {
   const benchMaterial = new THREE.MeshStandardMaterial({ color: 0x273247, roughness: .75 });
   const metalMaterial = new THREE.MeshStandardMaterial({ color: 0xaab5c5, metalness: .65, roughness: .3 });
   const waterMaterial = new THREE.MeshStandardMaterial({ color: 0x54c8f2, transparent: true, opacity: .82 });
 
   [
-    { side: -1, color: 0x2463d4, name: 'LAKERS', sign: '#552583' },
-    { side: 1, color: 0xe23845, name: 'GOLDEN STATE', sign: '#1d428a' },
+    { side: -1, color: homeColor, name: homeTeam, sign: `#${homeColor.toString(16).padStart(6, '0')}` },
+    { side: 1, color: awayColor, name: awayTeam, sign: `#${awayColor.toString(16).padStart(6, '0')}` },
   ].forEach(({ side, color, name, sign }) => {
     const bench = new THREE.Mesh(new THREE.BoxGeometry(1.3, .55, 9), benchMaterial);
     bench.position.set(side * 11.35, .42, -4.5);

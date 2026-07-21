@@ -35,28 +35,27 @@ function makeFan(index: number) {
   return fan;
 }
 
-function makeTeamFlag(team: 'LAKERS' | 'GOLDEN STATE') {
+function makeTeamFlag(team: string, teamColor: string) {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 256;
   const context = canvas.getContext('2d');
   if (context) {
-    const isLakers = team === 'LAKERS';
-    context.fillStyle = isLakers ? '#552583' : '#1d428a';
+    context.fillStyle = teamColor;
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = '#fdb927';
     context.beginPath();
     context.arc(118, 128, 78, 0, Math.PI * 2);
     context.fill();
-    context.strokeStyle = isLakers ? '#552583' : '#1d428a';
+    context.strokeStyle = '#ffffff';
     context.lineWidth = 9;
     context.beginPath();
     context.arc(118, 128, 61, 0, Math.PI * 2);
     context.stroke();
-    context.fillStyle = isLakers ? '#552583' : '#1d428a';
+    context.fillStyle = teamColor;
     context.font = '900 35px Arial';
     context.textAlign = 'center';
-    context.fillText(isLakers ? 'LA' : 'GS', 118, 141);
+    context.fillText(team.split(' ').map((word) => word[0]).join('').slice(0, 3), 118, 141);
     context.fillStyle = '#ffffff';
     context.font = 'italic 900 44px Arial';
     context.fillText(team, 340, 143);
@@ -65,14 +64,41 @@ function makeTeamFlag(team: 'LAKERS' | 'GOLDEN STATE') {
   return new THREE.Mesh(new THREE.PlaneGeometry(4.6, 2.3, 8, 3), material);
 }
 
-export function createBasketballCrowd(): Crowd {
+function makeVipSign() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 160;
+  const context = canvas.getContext('2d');
+  if (context) {
+    const gradient = context.createLinearGradient(0, 0, 512, 0);
+    gradient.addColorStop(0, '#4a2b00');
+    gradient.addColorStop(.5, '#f7c94b');
+    gradient.addColorStop(1, '#4a2b00');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, 512, 160);
+    context.strokeStyle = '#fff1a6';
+    context.lineWidth = 10;
+    context.strokeRect(8, 8, 496, 144);
+    context.fillStyle = '#170d02';
+    context.font = '900 88px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText('VIP', 256, 82);
+  }
+  return new THREE.Mesh(
+    new THREE.PlaneGeometry(4.8, 1.5),
+    new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), side: THREE.DoubleSide }),
+  );
+}
+
+export function createBasketballCrowd(homeTeam: string, awayTeam: string, homeColor: string, awayColor: string): Crowd {
   const group = new THREE.Group();
   const fans: THREE.Group[] = [];
   const standMaterial = new THREE.MeshStandardMaterial({ color: 0x30394c, roughness: .9 });
 
-  const rowCount = 9;
-  const seatsPerRow = 26;
-  const standLength = 55;
+  const rowCount = 7;
+  const seatsPerRow = 24;
+  const standLength = 72;
 
   [-1, 1].forEach((side) => {
     for (let row = 0; row < rowCount; row += 1) {
@@ -82,7 +108,7 @@ export function createBasketballCrowd(): Crowd {
 
       for (let seat = 0; seat < seatsPerRow; seat += 1) {
         const fan = makeFan(row * seatsPerRow * 2 + seat * 2 + (side > 0 ? 1 : 0));
-        fan.position.set(side * (14.15 + row * .72), .32 + row * .55, 20.2 - seat * 2.02);
+        fan.position.set(side * (14.15 + row * .72), .32 + row * .55, 19.7 - seat * 2.15);
         fan.rotation.y = side * Math.PI / 2;
         fan.scale.setScalar(.82);
         fan.userData.phase = row * .8 + seat * .47 + (side > 0 ? 1.2 : 0);
@@ -92,8 +118,20 @@ export function createBasketballCrowd(): Crowd {
       }
     }
 
+    [-17, -5, 7].forEach((z) => {
+      const vipSign = makeVipSign();
+      vipSign.position.set(side * 13.92, 1.2, z);
+      vipSign.rotation.y = side * Math.PI / 2;
+      group.add(vipSign);
+
+      const vipLight = new THREE.PointLight(0xffc84a, 8, 7);
+      vipLight.position.set(side * 13.3, 2.1, z);
+      group.add(vipLight);
+    });
+
     [-17, -5, 7, 19].forEach((z, index) => {
-      const flag = makeTeamFlag(index % 2 === 0 ? 'LAKERS' : 'GOLDEN STATE');
+      const isHome = index % 2 === 0;
+      const flag = makeTeamFlag(isHome ? homeTeam : awayTeam, isHome ? homeColor : awayColor);
       flag.position.set(side * 14.02, 4.2 + (index % 2) * .45, z);
       flag.rotation.y = side * Math.PI / 2;
       group.add(flag);

@@ -53,5 +53,12 @@ export function animateReferee(referee: Referee, now: number) {
   const signalling = now < referee.signalUntil;
   referee.rightArm.rotation.z = THREE.MathUtils.lerp(referee.rightArm.rotation.z, signalling ? -Math.PI : .2, .14);
   referee.leftArm.rotation.z = THREE.MathUtils.lerp(referee.leftArm.rotation.z, signalling ? Math.PI : -.2, .14);
-  referee.group.position.y = signalling ? Math.abs(Math.sin(now * .012)) * .08 : 0;
+  if (signalling) {
+    referee.group.position.y = Math.abs(Math.sin(now * .012)) * .08;
+    return;
+  }
+  const patrol = Math.sin(now * .00055);
+  referee.group.position.z = -5 + patrol * 11.5;
+  referee.group.position.y = Math.abs(Math.sin(now * .009)) * .055;
+  referee.group.rotation.y = Math.cos(now * .00055) >= 0 ? Math.PI : 0;
 }

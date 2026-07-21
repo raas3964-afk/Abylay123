@@ -1,0 +1,55 @@
+.pregame-show { position:absolute; z-index:30; inset:0; overflow:hidden; background:radial-gradient(circle at 50% 70%,#233d74aa,#030711 70%); color:#fff; pointer-events:none; }
+.pregame-content { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.pregame-content small { color:#ffb45e; font-weight:900; letter-spacing:5px; animation:showFade 1s both; }
+.pregame-content h2 { margin:18px 20px; font-size:clamp(35px,7vw,76px); line-height:.95; letter-spacing:-2px; text-shadow:0 0 35px #3f8cff; animation:showRise .7s both; }
+.pregame-spotlight { position:absolute; top:-25%; width:28%; height:130%; background:linear-gradient(#fff0,#dcecff44,#fff0); filter:blur(15px); transform-origin:top; }
+.spotlight-left { left:18%; animation:beamLeft 2.2s ease-in-out infinite alternate; }
+.spotlight-right { right:18%; animation:beamRight 2.5s ease-in-out infinite alternate; }
+.pregame-floor-glow { position:absolute; left:50%; bottom:8%; width:65%; height:18%; border-radius:50%; background:#438eff55; filter:blur(28px); transform:translateX(-50%); animation:pulseGlow 1s infinite alternate; }
+.pregame-teams { display:flex; align-items:center; gap:clamp(18px,5vw,70px); margin-top:25px; animation:showRise .65s both; }
+.pregame-teams section { display:flex; flex-direction:column; gap:9px; }
+.pregame-teams b { font-size:clamp(28px,6vw,65px); text-shadow:0 0 28px #ff8b35; }
+.pregame-teams span { color:#b9c7dd; font-size:10px; letter-spacing:2px; }
+.pregame-teams strong { color:#ff9a48; font-size:clamp(24px,4vw,44px); }
+.pregame-countdown { font-size:clamp(130px,25vw,270px); font-weight:900; line-height:1; text-shadow:0 0 25px #fff,0 0 80px #397dff; animation:countPop .9s both; }
+.pregame-go { color:#ffb45e!important; text-shadow:0 0 35px #ff7b2d!important; }
+.pregame-show>i { position:absolute; top:-8%; width:7px; height:18px; animation-name:confetti; animation-timing-function:linear; animation-iteration-count:infinite; }
+.arena-screen { position:absolute; z-index:3; top:2%; left:50%; display:flex; width:min(680px,86vw); min-height:150px; flex-direction:column; align-items:center; justify-content:center; border:5px solid #20293b; border-radius:8px; background:linear-gradient(120deg,#552583,#070b18 48%,#1d428a); box-shadow:0 0 35px #438eff99,inset 0 0 20px #fff2; transform:translateX(-50%) perspective(500px) rotateX(-5deg); overflow:hidden; }
+.arena-screen:after { content:""; position:absolute; inset:0; background:repeating-linear-gradient(0deg,#fff0 0 4px,#ffffff0b 5px); animation:screenScan 1.4s linear infinite; }
+.arena-screen span,.arena-screen em { color:#a9c7ff; font:800 9px Manrope; letter-spacing:3px; }
+.arena-screen b { margin:6px; color:#fff; font-size:clamp(17px,3vw,31px); text-shadow:0 0 15px #fff; animation:screenPulse .8s infinite alternate; }
+.arena-team-logos { display:flex; align-items:center; gap:18px; height:66px; margin-top:3px; }
+.arena-team-logos svg { width:62px; height:62px; filter:drop-shadow(0 0 9px #fff6); }
+.arena-team-logos img { width:62px; height:62px; object-fit:contain; filter:drop-shadow(0 0 9px #fff6); }
+.arena-team-logos strong { color:#fff; font-size:17px; text-shadow:0 0 10px #fff; }
+.player-entrance { position:absolute; z-index:4; left:50%; bottom:8%; width:min(700px,90vw); height:46%; transform:translateX(-50%); }
+.entrance-tunnel { position:absolute; left:50%; top:0; width:150px; height:125px; border-radius:70px 70px 0 0; background:radial-gradient(ellipse at bottom,#517ed0,#03050b 68%); box-shadow:0 0 45px #3c7cff88; transform:translateX(-50%); }
+.glowing-runway { position:absolute; left:50%; top:82px; width:min(470px,72vw); height:270px; background:linear-gradient(90deg,#247cff00,#54a1ff99 12%,#ffffff55 50%,#54a1ff99 88%,#247cff00); clip-path:polygon(42% 0,58% 0,100% 100%,0 100%); filter:drop-shadow(0 0 18px #44a2ff); transform:translateX(-50%); overflow:hidden; }
+.glowing-runway:before,.glowing-runway:after { content:""; position:absolute; top:0; bottom:0; width:5px; background:#d9f4ff; box-shadow:0 0 18px #fff,0 0 35px #198cff; }
+.glowing-runway:before { left:16%; transform:rotate(-13deg); }.glowing-runway:after { right:16%; transform:rotate(13deg); }
+.glowing-runway span { position:absolute; inset:0; background:repeating-linear-gradient(0deg,#fff0 0 35px,#bde8ff99 38px,#fff0 41px); animation:runwayFlow .7s linear infinite; }
+.show-player { --player-delay:0s; --player-lane:0; position:absolute; left:calc(50% - 30px); top:40px; display:flex; width:60px; flex-direction:column; align-items:center; opacity:0; filter:drop-shadow(0 10px 8px #000); animation:playerWalk 3.3s var(--player-delay) ease-out forwards; }
+.show-player-head { width:24px; height:24px; border-radius:50%; background:#9b5d38; box-shadow:inset -5px -2px #613721; }
+.show-player-body { display:flex; width:47px; height:66px; align-items:center; justify-content:center; border-radius:15px 15px 7px 7px; background:linear-gradient(90deg,#173d9b,#3478eb,#173d9b); color:#ffd54d; font-weight:900; border:2px solid #e9c552; }
+.show-player>b { margin-top:4px; padding:2px 5px; border-radius:4px; background:#050912cc; color:#fff; font-size:8px; letter-spacing:1px; }
+.fire-jet { position:absolute; z-index:6; bottom:5%; width:44px; height:100px; filter:drop-shadow(0 0 13px #ff2e00) drop-shadow(0 0 28px #ff7b00); transform-origin:bottom; animation:fireBurst .32s ease-in-out infinite alternate; }
+.fire-jet:after { content:""; position:absolute; left:17px; bottom:-9px; width:11px; height:14px; border-radius:50%; background:#c4dcff; box-shadow:0 0 12px #fff; }
+.flame-core,.flame-tip { position:absolute; left:50%; bottom:0; display:block; border-radius:55% 45% 60% 40%; transform:translateX(-50%) rotate(45deg); }
+.flame-core { width:42px; height:76px; background:radial-gradient(circle at 65% 65%,#fff 0 10%,#ffe13b 25%,#ff6500 58%,#dc1900 78%); box-shadow:inset 0 0 12px #fff; }
+.flame-tip { bottom:46px; width:29px; height:48px; background:linear-gradient(135deg,#ffef74,#ff5a00 65%,#a90000); animation:flameWave .18s infinite alternate; }
+.fire-0 { left:5%; }.fire-1 { left:22%; animation-delay:.2s; }.fire-2 { left:38%; animation-delay:.1s; }.fire-3 { right:38%; animation-delay:.25s; }.fire-4 { right:22%; animation-delay:.05s; }.fire-5 { right:5%; animation-delay:.18s; }
+@keyframes showRise { from { opacity:0; transform:translateY(35px) scale(.9); } to { opacity:1; transform:none; } }
+@keyframes showFade { from { opacity:0; } to { opacity:1; } }
+@keyframes countPop { from { opacity:0; transform:scale(1.8); } to { opacity:1; transform:scale(1); } }
+@keyframes beamLeft { from { transform:rotate(-28deg); } to { transform:rotate(25deg); } }
+@keyframes beamRight { from { transform:rotate(28deg); } to { transform:rotate(-25deg); } }
+@keyframes pulseGlow { to { opacity:.5; transform:translateX(-50%) scale(1.15); } }
+@keyframes confetti { to { transform:translateY(115vh) rotate(720deg); } }
+@keyframes playerWalk { 0% { opacity:0; transform:translate(0,0) scale(.65); } 18% { opacity:1; } 55% { transform:translate(calc(var(--player-lane) * 35px),100px) scale(.85); } 100% { opacity:1; transform:translate(calc(var(--player-lane) * 70px),230px) scale(1); } }
+@keyframes fireBurst { from { transform:scale(.55) translateY(18px); opacity:.65; } to { transform:scale(1.25) translateY(-10px); opacity:1; } }
+@keyframes flameWave { to { transform:translateX(-50%) rotate(57deg) skew(7deg); } }
+@keyframes runwayFlow { to { transform:translateY(41px); } }
+@keyframes screenPulse { to { color:#ffd05d; text-shadow:0 0 24px #ff7b2d; } }
+@keyframes screenScan { to { transform:translateY(10px); } }
+.team-photo-session{position:absolute;z-index:12;top:175px;right:5%;bottom:5%;left:5%;display:flex;align-items:center;justify-content:center;gap:clamp(15px,5vw,70px);animation:showRise .5s both}.team-photo-session section{position:relative;width:min(330px,40vw);min-height:245px;padding:18px;border:2px solid #ffffff55;border-radius:18px;background:#091326dc;box-shadow:0 0 35px #559cff55;text-align:center}.team-photo-session section>img{width:65px;height:65px;object-fit:contain}.team-photo-session section>b{display:block;margin-top:12px;color:#fff;font-size:clamp(13px,2vw,22px)}.photo-team-row{display:flex;align-items:flex-end;justify-content:center;gap:8px;height:105px}.photo-team-row i{position:relative;width:36px;height:66px;border-radius:11px 11px 5px 5px;background:var(--photo-uniform);border:2px solid #fff}.photo-team-row i:before{content:"";position:absolute;top:-24px;left:7px;width:20px;height:20px;border-radius:50%;background:#a96d48}.photo-team-row i:nth-child(2),.photo-team-row i:nth-child(4){height:58px}.pregame-photographers{position:absolute;right:0;bottom:-8px;left:0;display:flex;justify-content:center;gap:80px;font-size:34px}.pregame-photographers span{position:relative;filter:drop-shadow(0 5px 5px #000)}.pregame-photographers span:after{content:"";position:absolute;top:-8px;left:2px;width:28px;height:28px;border-radius:50%;background:#fff;opacity:0;animation:pregameFlash 1s infinite}.pregame-photographers span:nth-child(2):after{animation-delay:.35s}.pregame-photographers span:nth-child(3):after{animation-delay:.7s}@keyframes pregameFlash{0%,70%,100%{opacity:0;transform:scale(.2)}74%{opacity:.95;transform:scale(5)}}@media(max-width:600px){.team-photo-session{top:160px;gap:7px}.team-photo-session section{width:46vw;min-height:210px;padding:9px}.photo-team-row{gap:3px}.photo-team-row i{width:24px;height:52px}.photo-team-row i:before{left:3px;width:16px;height:16px}.pregame-photographers{gap:45px}}
+@media(max-width:600px) { .pregame-teams { flex-direction:column; gap:12px; } .pregame-content small { font-size:9px; letter-spacing:3px; } }

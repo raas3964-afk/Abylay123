@@ -10,9 +10,9 @@ type Dancer = {
 
 export type Cheerleaders = { group: THREE.Group; dancers: Dancer[] };
 
-function createDancer(baseX: number, index: number): Dancer {
+function createDancer(baseX: number, index: number, teamColor: number): Dancer {
   const group = new THREE.Group();
-  const uniform = new THREE.MeshStandardMaterial({ color: index % 2 ? 0xfdb927 : 0x552583 });
+  const uniform = new THREE.MeshStandardMaterial({ color: index % 2 ? 0xf5f5f5 : teamColor });
   const skin = new THREE.MeshStandardMaterial({ color: index % 2 ? 0xc98255 : 0x9b5d38 });
   const body = new THREE.Mesh(new THREE.CapsuleGeometry(.28, .58, 5, 10), uniform);
   body.position.y = 1.25;
@@ -20,7 +20,7 @@ function createDancer(baseX: number, index: number): Dancer {
   skirt.position.y = .78;
   const head = new THREE.Mesh(new THREE.SphereGeometry(.22, 14, 12), skin);
   head.position.y = 1.92;
-  const pomMaterial = new THREE.MeshStandardMaterial({ color: index % 2 ? 0x552583 : 0xfdb927, roughness: .65 });
+  const pomMaterial = new THREE.MeshStandardMaterial({ color: index % 2 ? teamColor : 0xffffff, roughness: .65 });
   const arms = [-1, 1].map((side) => {
     const pivot = new THREE.Group();
     pivot.position.set(side * .32, 1.52, 0);
@@ -43,9 +43,9 @@ function createDancer(baseX: number, index: number): Dancer {
   return { group, leftArm: arms[0], rightArm: arms[1], phase: index * .8, baseX };
 }
 
-export function createCheerleaders(scene: THREE.Scene): Cheerleaders {
+export function createCheerleaders(scene: THREE.Scene, teamColor: number): Cheerleaders {
   const group = new THREE.Group();
-  const dancers = [-5.4, -2, 2, 5.4].map((x, index) => createDancer(x, index));
+  const dancers = [-5.4, -2, 2, 5.4].map((x, index) => createDancer(x, index, teamColor));
   dancers.forEach((dancer) => group.add(dancer.group));
   group.visible = false;
   scene.add(group);

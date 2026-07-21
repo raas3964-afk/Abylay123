@@ -1,11 +1,20 @@
 import { useEffect, useState } from 'react';
 import './HomePage.css';
+import './HomePageOverflow.css';
+import { TeamSelection, type TeamId } from './TeamSelection';
 
 type Props = {
-  playerName: string;
-  onPlay: () => void;
+  onPlay: (mode: GameMode, homeTeam: TeamId, awayTeam: TeamId) => void;
   onLogout: () => void;
 };
+
+export type GameMode = '5v5' | '3v3' | '1v1';
+
+const GAME_MODES: { value: GameMode; title: string; subtitle: string }[] = [
+  { value: '5v5', title: '5 VS 5', subtitle: 'Полный матч' },
+  { value: '3v3', title: '3 VS 3', subtitle: 'Быстрая игра' },
+  { value: '1v1', title: '1 VS 1', subtitle: 'Дуэль' },
+];
 
 type StreakData = {
   count: number;
@@ -31,8 +40,11 @@ function updateStreak(): number {
   return count;
 }
 
-export function HomePage({ playerName, onPlay, onLogout }: Props) {
+export function HomePage({ onPlay, onLogout }: Props) {
   const [streak, setStreak] = useState(1);
+  const [gameMode, setGameMode] = useState<GameMode>('5v5');
+  const [homeTeam, setHomeTeam] = useState<TeamId | ''>('');
+  const [awayTeam, setAwayTeam] = useState<TeamId | ''>('');
   const [easyRead, setEasyRead] = useState(() => localStorage.getItem('swish-easy-read') === 'true');
 
   useEffect(() => {
@@ -73,7 +85,7 @@ export function HomePage({ playerName, onPlay, onLogout }: Props) {
         <div className="home-welcome">
           <small>WELCOME TO THE COURT</small>
           <h1>READY TO<br/><em>BALL?</em></h1>
-          <strong>Hey, {playerName}</strong>
+          <strong>Hey, Baller</strong>
           <p>The arena is waiting. Keep your streak alive and set a new record.</p>
           <div className="team-preview" aria-label="Blue team attacks, red team defends">
             <div className="team-side attack-team">
@@ -94,12 +106,42 @@ export function HomePage({ playerName, onPlay, onLogout }: Props) {
           <small>YOUR STREAK</small>
         </div>
 
-        <button className="home-play" id="play-button" onClick={onPlay} aria-label="Play basketball now">
-          <span><small>ENTER THE COURT</small>Play now</span>
+        <div className="game-mode-picker" aria-label="Выбор режима игры">
+          {GAME_MODES.map((mode) => (
+            <button
+              className={gameMode === mode.value ? 'selected' : ''}
+              key={mode.value}
+              onClick={() => setGameMode(mode.value)}
+              aria-pressed={gameMode === mode.value}
+            >
+              <b>{mode.title}</b>
+              <span>{mode.subtitle}</span>
+            </button>
+          ))}
+        </div>
+
+        <TeamSelection
+          homeTeam={homeTeam}
+          awayTeam={awayTeam}
+          onHomeChange={(team) => {
+            setHomeTeam(team);
+            if (team === awayTeam) setAwayTeam('');
+          }}
+          onAwayChange={setAwayTeam}
+        />
+
+        <button
+          className="home-play"
+          id="play-button"
+          disabled={!homeTeam || !awayTeam}
+          onClick={() => homeTeam && awayTeam && onPlay(gameMode, homeTeam, awayTeam)}
+          aria-label={`Играть в режиме ${gameMode}`}
+        >
+          <span><small>РЕЖИМ {gameMode}</small>{homeTeam && awayTeam ? 'Играть сейчас' : 'Выбери команды'}</span>
           <i>→</i>
         </button>
         <div className="home-stats">
-          <span><b>5v5</b>FULL MATCH</span>
+          <span><b>{gameMode}</b>ВЫБРАННЫЙ РЕЖИМ</span>
           <span><b>3D</b>LIVE ARENA</span>
           <span><b>∞</b>SHOTS</span>
         </div>

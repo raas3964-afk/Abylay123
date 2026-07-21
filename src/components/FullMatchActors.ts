@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { runOpponentBrain } from './OpponentBrain';
 
 type PersonFactory = (color: number) => THREE.Group;
 
@@ -59,12 +60,12 @@ function createBasket(scene: THREE.Scene) {
   scene.add(board, pole, rim, net);
 }
 
-export function createFullMatchActors(scene: THREE.Scene, person: PersonFactory): FullMatchActors {
+export function createFullMatchActors(scene: THREE.Scene, person: PersonFactory, teamColor: number): FullMatchActors {
   createBasket(scene);
   const teammatePositions = [[4.4, -3], [3.8, 2]];
   const names = ['CURRY', 'LEBRON JAMES'];
   const teammates = teammatePositions.map(([x, z], index) => {
-    const teammate = person(0x2463d4);
+    const teammate = person(teamColor);
     teammate.position.set(x, 0, z);
     addJerseyName(teammate, names[index]);
     teammate.userData.role = names[index];
@@ -105,13 +106,19 @@ export function updateFullMatch(
   now: number,
   active: boolean,
   attacker: THREE.Group,
+  opponents: THREE.Group[],
+  defenderPosition: THREE.Vector3,
   onOpponentScore: (points: number) => void,
   onMessage: (message: string) => void,
 ) {
   match.coaches.forEach((coach, index) => {
     coach.rotation.z = Math.sin(now * .002 + index) * .035;
   });
-  if (!active) return false;
+  if (!active) {
+    match.opponentBall.visible = false;
+    return false;
+  }
+  if (match.attackStart) match.opponentBall.visible = true;
   if (!match.attackStart && now < match.nextAttackAt) {
     const seconds = now / 1000;
     const curry = match.teammates[0];
@@ -134,13 +141,34 @@ export function updateFullMatch(
     match.attackStart = now;
     match.attackFinished = false;
     match.opponentBall.visible = true;
-    onMessage('🛡️ ЗАЩИТА: Space — блок, Shift рядом — перехват');
+    onMessage('🔄 СОПЕРНИКИ ПАССУЮТСЯ И ИДУТ К ТВОЕМУ КОЛЬЦУ — ЗАЩИЩАЙСЯ!');
   }
   if (!match.attackStart) return false;
 
   const elapsed = (now - match.attackStart) / 1000;
-  const progress = Math.min(1, elapsed / 2.8);
-  attacker.position.x = Math.sin(progress * Math.PI) * 1.2;
+  const passDuration = opponents.length >= 2 ? .9 : 0;
+  if (elapsed < passDuration) {
+    opponents[0].position.set(-3.2, 0, -8.5);
+    opponents[1].position.set(3.1, 0, -5.2);
+    attacker.position.set(0, 0, -11.5);
+    const firstPass = elapsed < passDuration / 2;
+    const passProgress = (elapsed % (passDuration / 2)) / (passDuration / 2);
+    const passer = firstPass ? opponents[0] : opponents[1];
+    const receiver = firstPass ? opponents[1] : attacker;
+    const passOrigin = passer.position.clone().add(new THREE.Vector3(.35, 1.65, 0));
+    const passTarget = receiver.position.clone().add(new THREE.Vector3(.35, 1.65, 0));
+    match.opponentBall.position.lerpVectors(passOrigin, passTarget, passProgress);
+    match.opponentBall.position.y += Math.sin(passProgress * Math.PI) * 1.15;
+    passer.rotation.y = 0;
+    receiver.rotation.y = 0;
+    return true;
+  }
+  const attackElapsed = elapsed - passDuration;
+  const progress = Math.min(1, attackElapsed / 2.05);
+  const decision = runOpponentBrain({ defenderX: defenderPosition.x, defenderZ: defenderPosition.z, progress, time: now });
+  const evadeDirection = defenderPosition.x <= 0 ? 1 : -1;
+  const targetLane = decision.lane + evadeDirection * (1.1 + decision.hesitation);
+  attacker.position.x = THREE.MathUtils.lerp(attacker.position.x, targetLane, .085);
   attacker.position.z = THREE.MathUtils.lerp(-12, 7.7, progress);
   attacker.rotation.y = 0;
   attacker.position.y = progress > .78 ? Math.sin((progress - .78) / .22 * Math.PI) * 1.2 : 0;
@@ -156,10 +184,14 @@ export function updateFullMatch(
   if (progress > .88) match.opponentBall.position.lerp(new THREE.Vector3(0, 3.45, 8.9), .16);
   if (progress === 1 && !match.attackFinished) {
     match.attackFinished = true;
-    onOpponentScore(2);
-    onMessage('🔵 СОПЕРНИК ЗАБИЛ! LAKERS СНОВА АТАКУЮТ');
+    const defenseDistance = Math.hypot(defenderPosition.x - attacker.position.x, defenderPosition.z - attacker.position.z);
+    if (defenseDistance > 1.35 || decision.confidence > .72) onOpponentScore(2);
+    onMessage('🔵 СОПЕРНИК ЗАБИЛ! ТВОЯ КОМАНДА СНОВА АТАКУЕТ');
+    onMessage(defenseDistance > 1.35 || decision.confidence > .72
+      ? '🤖 AI SCORED! READ THE NEXT ATTACK'
+      : '🛡️ GREAT DEFENSE — AI MISSED!');
   }
-  if (elapsed > 3.6) {
+  if (attackElapsed > 2.8) {
     match.attackStart = 0;
     match.nextAttackAt = now + 11000;
     match.opponentBall.visible = false;
