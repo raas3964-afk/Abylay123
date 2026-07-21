@@ -10,7 +10,14 @@
   }
 
   .home-welcome {
+    grid-column: 1;
+    grid-row: 1 / span 3;
     align-self: start;
-    transform: translateY(-160px);
+    transform: none;
+  }
+
+  .streak-card {
+    grid-column: 2;
+    grid-row: 1;
   }
 }
