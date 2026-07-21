@@ -44,6 +44,7 @@ let nextJerseyNumber = 0;
 const JERSEY_NUMBERS = [23, 30, 0, 1, 3, 7, 11, 13, 21, 34];
 const PLAYER_MOVE_SPEED = 10.2;
 const PLAYER_SHOT_ACCURACY = 0.45;
+const QUARTER_DURATION = 30;
 
 function addJerseyNumber(player: THREE.Group, number: number) {
   const canvas = document.createElement("canvas");
@@ -886,7 +887,7 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
         activeRef.current &&
         !wasActive &&
         gameInfoRef.current.quarter === 1 &&
-        gameInfoRef.current.time === 180
+        gameInfoRef.current.time === QUARTER_DURATION
       ) {
         tipOffStart = now;
         centerRestartAt = 0;
@@ -1268,7 +1269,7 @@ export function BasketballGame({ mode, homeTeam, awayTeam, homeColor, awayColor,
   const [pregame, setPregame] = useState(false);
   const [score, setScore] = useState(0);
   const [opponentScore, setOpponentScore] = useState(0);
-  const [time, setTime] = useState(180);
+  const [time, setTime] = useState(QUARTER_DURATION);
   const [quarter, setQuarter] = useState(1);
   const [quarterBreak, setQuarterBreak] = useState(false);
   const [shotClock, setShotClock] = useState(24);
@@ -1332,7 +1333,7 @@ export function BasketballGame({ mode, homeTeam, awayTeam, homeColor, awayColor,
     setMessage(`🏀 END OF QUARTER ${quarter}`);
     const nextQuarter = window.setTimeout(() => {
       setQuarter((value) => value + 1);
-      setTime(180);
+      setTime(QUARTER_DURATION);
       setShotClock(24);
       setQuarterBreak(false);
       setMessage("🏀 NEXT QUARTER — PLAY!");
@@ -1342,7 +1343,7 @@ export function BasketballGame({ mode, homeTeam, awayTeam, homeColor, awayColor,
   function start() {
     setScore(0);
     setOpponentScore(0);
-    setTime(180);
+    setTime(QUARTER_DURATION);
     setQuarter(1);
     setQuarterBreak(false);
     setShotClock(24);
