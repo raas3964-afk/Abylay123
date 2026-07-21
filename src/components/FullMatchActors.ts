@@ -114,7 +114,10 @@ export function updateFullMatch(
   match.coaches.forEach((coach, index) => {
     coach.rotation.z = Math.sin(now * .002 + index) * .035;
   });
-  if (!active) {
+  // Rival players are defense-only: they never receive possession or score.
+  if (active || !active) {
+    match.attackStart = 0;
+    match.nextAttackAt = Number.POSITIVE_INFINITY;
     match.opponentBall.visible = false;
     return false;
   }

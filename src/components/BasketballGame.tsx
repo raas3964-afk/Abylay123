@@ -609,7 +609,7 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
       defender.position.set((index - 2) * 2.2, 0, z);
       defender.rotation.y = Math.PI;
       scene.add(defender);
-      defender.userData.role = index < 2 ? "defender" : "attacker";
+      defender.userData.role = "defender";
       return defender;
     });
     const activeDefenders = mode === "5v5"
