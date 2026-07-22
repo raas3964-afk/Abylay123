@@ -2,12 +2,26 @@ import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { ArenaTeamLogos } from "./ArenaTeamLogos";
 import "./PregameShow.css";
+import "./PregameTeamRitual.css";
+import "./PregameVs.css";
+import { TicketSalesShow } from "./TicketSalesShow";
 
-type Props = { homeTeam: string; awayTeam: string; homeColor: string; awayColor: string; homeLogo: string; awayLogo: string; homeStar: string; awayStar: string; onComplete: () => void };
+type Props = { trophyName: string; homeTeam: string; awayTeam: string; homeColor: string; awayColor: string; homeLogo: string; awayLogo: string; homeStar: string; awayStar: string; onComplete: () => void };
 
 const PLAYERS = ["CURRY", "LEBRON", "PLAYER", "PARTNER"];
 
-export function PregameShow({ homeTeam, awayTeam, homeColor, awayColor, homeLogo, awayLogo, homeStar, awayStar, onComplete }: Props) {
+function teamChant(team: string) {
+  const chants: Record<string, string> = {
+    "LA Lakers": "SHOWTIME! LAKERS! ПОБЕДА!",
+    "Golden State": "STRENGTH IN NUMBERS! WARRIORS!",
+    "Chicago Bulls": "RUN WITH THE BULLS! ВПЕРЁД!",
+    "Boston Celtics": "CELTIC PRIDE! ВМЕСТЕ ДО КОНЦА!",
+    "Miami Heat": "HEAT NATION! ЗАЖИГАЕМ!",
+  };
+  return chants[team] ?? `${team.toUpperCase()}! ОДНА КОМАНДА — ОДНА ПОБЕДА!`;
+}
+
+export function PregameShow({ trophyName, homeTeam, awayTeam, homeColor, awayColor, homeLogo, awayLogo, homeStar, awayStar, onComplete }: Props) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -16,23 +30,26 @@ export function PregameShow({ homeTeam, awayTeam, homeColor, awayColor, homeLogo
       () => setElapsed(performance.now() - startedAt),
       100,
     );
-    const finish = window.setTimeout(onComplete, 11000);
+    const finish = window.setTimeout(onComplete, 20000);
     return () => {
       clearInterval(ticker);
       clearTimeout(finish);
     };
   }, [onComplete]);
 
-  const countdown = Math.max(1, 3 - Math.floor(Math.max(0, elapsed - 7800) / 900));
-  const screenText = elapsed < 1800
+  const showElapsed = Math.max(0, elapsed - 3500);
+  const countdown = Math.max(1, 3 - Math.floor(Math.max(0, showElapsed - 13500) / 900));
+  const screenText = showElapsed < 1800
     ? "WELCOME TO SWISH ARENA"
-    : elapsed < 5200
+    : showElapsed < 4800
       ? `MAKE SOME NOISE — ${homeTeam.toUpperCase()}!`
-      : elapsed < 7800 ? "TEAM PHOTO · LOOK AT THE CAMERAS!"
-      : elapsed < 10500 ? `TIP-OFF IN ${countdown}` : "GAME TIME";
+      : showElapsed < 8500 ? "КОМАНДА ВЫШЛА НА РАЗМИНКУ"
+      : showElapsed < 12500 ? teamChant(homeTeam)
+      : showElapsed < 16000 ? `TIP-OFF IN ${countdown}` : "GAME TIME";
 
   return (
     <div className="pregame-show">
+      {elapsed < 3500 && <TicketSalesShow homeTeam={homeTeam} awayTeam={awayTeam} homeLogo={homeLogo} awayLogo={awayLogo} />}
       <div className="pregame-spotlight spotlight-left" />
       <div className="pregame-spotlight spotlight-right" />
       <div className="pregame-floor-glow" />
@@ -42,7 +59,7 @@ export function PregameShow({ homeTeam, awayTeam, homeColor, awayColor, homeLogo
         <b>{screenText}</b>
         <em>{homeTeam}&nbsp;&nbsp; VS &nbsp;&nbsp;{awayTeam}</em>
       </div>
-      {elapsed >= 1500 && elapsed < 5200 && (
+      {showElapsed >= 1500 && showElapsed < 4800 && (
         <div className="player-entrance">
           <div className="entrance-tunnel" />
           <div className="glowing-runway"><span /></div>
@@ -82,21 +99,22 @@ export function PregameShow({ homeTeam, awayTeam, homeColor, awayColor, homeLogo
           ))}
         </div>
       )}
-      {elapsed >= 5200 && elapsed < 7800 && (
-        <div className="team-photo-session">
-          {[
-            { name: homeTeam, color: homeColor, logo: homeLogo },
-            { name: awayTeam, color: awayColor, logo: awayLogo },
-          ].map((team) => (
-            <section key={team.name}>
-              <img src={team.logo} alt="" />
-              <div className="photo-team-row">
-                {[0, 1, 2, 3, 4].map((player) => <i key={player} style={{ "--photo-uniform": team.color } as CSSProperties} />)}
-              </div>
-              <b>{team.name}</b>
-            </section>
+      {showElapsed >= 4800 && showElapsed < 8500 && (
+        <div className="team-warmup" style={{ "--ritual-color": homeColor } as CSSProperties}>
+          <strong>РАЗМИНКА · {homeTeam}</strong>
+          <div className="warmup-cones">▲　▲　▲　▲　▲</div>
+          {[0, 1, 2, 3, 4].map((player) => (
+            <div className={`warmup-player warmup-${player}`} key={player}><i /><b>{player + 1}</b><span>🏀</span></div>
           ))}
-          <div className="pregame-photographers"><span>📷</span><span>📷</span><span>📷</span></div>
+        </div>
+      )}
+      {showElapsed >= 8500 && showElapsed < 12500 && (
+        <div className="team-huddle" style={{ "--ritual-color": homeColor } as CSSProperties}>
+          <img src={homeLogo} alt="" />
+          <div className="huddle-coach"><i /><b>ТРЕНЕР</b></div>
+          {[0, 1, 2, 3, 4].map((player) => <div className={`huddle-player huddle-${player}`} key={player}><i /><b>{player + 1}</b></div>)}
+          <div className="hands-together">🤝</div>
+          <strong>{teamChant(homeTeam)}</strong>
         </div>
       )}
       {Array.from({ length: 26 }, (_, index) => (
@@ -108,19 +126,20 @@ export function PregameShow({ homeTeam, awayTeam, homeColor, awayColor, homeLogo
         } as CSSProperties} />
       ))}
       <div className="pregame-content">
+        {showElapsed < 1500 && <strong>🏆 МАТЧ ЗА {trophyName}</strong>}
         <small>SWISH 3D ПРЕДСТАВЛЯЕТ</small>
-        {elapsed < 1500 && <h2>ДОБРО ПОЖАЛОВАТЬ<br />НА ГЛАВНУЮ АРЕНУ</h2>}
-        {elapsed >= 1800 && elapsed < 5200 && (
+        {showElapsed < 1500 && <h2>ДОБРО ПОЖАЛОВАТЬ<br />НА ГЛАВНУЮ АРЕНУ</h2>}
+        {showElapsed >= 1800 && showElapsed < 4800 && (
           <div className="pregame-teams">
             <section><b style={{ color: homeColor }}>{homeTeam}</b><span>⭐ {homeStar}</span></section>
             <strong>VS</strong>
             <section><b style={{ color: awayColor }}>{awayTeam}</b><span>⭐ {awayStar}</span></section>
           </div>
         )}
-        {elapsed >= 7800 && elapsed < 10500 && (
+        {showElapsed >= 13500 && showElapsed < 16000 && (
           <div className="pregame-countdown" key={countdown}>{countdown}</div>
         )}
-        {elapsed >= 10500 && <h2 className="pregame-go">ИГРА НАЧАЛАСЬ!</h2>}
+        {showElapsed >= 16000 && <h2 className="pregame-go">ИГРА НАЧАЛАСЬ!</h2>}
       </div>
     </div>
   );

@@ -1,0 +1,60 @@
+.home-arena-decor {
+  display: flex;
+  width: min(700px, calc(100% - 30px));
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.home-arena-decor .home-nba-flag {
+  position: relative;
+  width: 72px;
+  height: 94px;
+  margin: auto;
+  border: 4px solid #fff;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #17408b 50%, #c9082a 50%);
+  box-shadow: 0 0 22px #4d94ff88, 0 8px 22px #0009;
+}
+
+.home-arena-decor .home-nba-flag i {
+  top: 14px;
+  width: 13px;
+  height: 48px;
+  border-radius: 8px 8px 5px 5px;
+  transform: translateX(-50%) rotate(8deg);
+}
+
+.home-arena-decor .home-nba-flag i::after {
+  position: absolute;
+  top: 18px;
+  left: -14px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  content: "";
+}
+
+.home-arena-decor .home-nba-flag b { bottom: 4px; font-size: 13px; }
+.home-legends-line { display: flex; align-items: flex-end; justify-content: center; gap: clamp(25px, 8vw, 90px); }
+.home-legend { display: flex; min-width: 120px; flex-direction: column; align-items: center; color: #fff; text-align: center; }
+.home-legend>div { position: relative; width: 62px; height: 100px; filter: drop-shadow(0 8px 6px #0009); }
+.home-legend>div i { position: absolute; z-index: 2; top: 0; left: 19px; width: 25px; height: 25px; border-radius: 50%; background: #a96d48; box-shadow: inset -5px -2px #663a25; }
+.home-legend>div b { position: absolute; top: 23px; left: 5px; display: grid; width: 52px; height: 72px; place-items: center; border: 2px solid #fff; border-radius: 15px 15px 7px 7px; color: #fff; font-size: 23px; }
+.home-legend>strong { margin-top: 3px; font-size: 10px; }
+.home-legend>span { color: #f4c34f; font-size: 6px; font-weight: 900; letter-spacing: 1px; }
+.curry-player>div b { background: linear-gradient(90deg,#1d428a,#2f70c9); color: #ffc72c; }
+.kyrie-player>div b { background: linear-gradient(90deg,#111,#333); }
+.lamelo-player>div b { background: linear-gradient(90deg,#1d8b9f,#5a2d81); }
+
+@media (max-width: 600px) {
+  .home-arena-decor { margin-top: 6px; }
+  .home-arena-decor .home-nba-flag { width: 54px; height: 68px; }
+  .home-arena-decor .home-nba-flag i { top: 10px; height: 32px; }
+  .home-legends-line { gap: 5px; }
+  .home-legend { min-width: 90px; }
+  .home-legend>div { height: 78px; transform: scale(.78); transform-origin: bottom; }
+  .home-legend>strong { font-size: 8px; }
+  .home-legend>span { font-size: 5px; }
+}

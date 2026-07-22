@@ -3,7 +3,7 @@ import * as THREE from 'three';
 const STAND_COLOR = 0x344d70;
 const SEAT_COLORS = [0x552583, 0xfdb927, 0x1d428a, 0x376db6];
 
-function addEndStand(scene: THREE.Scene, side: -1 | 1) {
+function addEndStand(scene: THREE.Scene, side: -1 | 1, includeFans: boolean) {
   const standMaterial = new THREE.MeshStandardMaterial({ color: STAND_COLOR, roughness: .88 });
   const seatGeometry = new THREE.BoxGeometry(.75, .42, .72);
   const seatMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .75 });
@@ -57,10 +57,11 @@ function addEndStand(scene: THREE.Scene, side: -1 | 1) {
   fanBodies.instanceMatrix.needsUpdate = true;
   fanHeads.instanceMatrix.needsUpdate = true;
   if (fanBodies.instanceColor) fanBodies.instanceColor.needsUpdate = true;
-  scene.add(seats, fanBodies, fanHeads);
+  scene.add(seats);
+  if (includeFans) scene.add(fanBodies, fanHeads);
 }
 
-function addUpperSide(scene: THREE.Scene, side: -1 | 1) {
+function addUpperSide(scene: THREE.Scene, side: -1 | 1, includeFans: boolean) {
   const material = new THREE.MeshStandardMaterial({ color: 0x29486f, roughness: .9 });
   const rows = 12;
   const peoplePerRow = 34;
@@ -105,12 +106,12 @@ function addUpperSide(scene: THREE.Scene, side: -1 | 1) {
   bodies.instanceMatrix.needsUpdate = true;
   heads.instanceMatrix.needsUpdate = true;
   if (bodies.instanceColor) bodies.instanceColor.needsUpdate = true;
-  scene.add(bodies, heads);
+  if (includeFans) scene.add(bodies, heads);
 }
 
-export function createArenaGrandstands(scene: THREE.Scene) {
-  addEndStand(scene, -1);
-  addEndStand(scene, 1);
-  addUpperSide(scene, -1);
-  addUpperSide(scene, 1);
+export function createArenaGrandstands(scene: THREE.Scene, includeFans = true) {
+  addEndStand(scene, -1, includeFans);
+  addEndStand(scene, 1, includeFans);
+  addUpperSide(scene, -1, includeFans);
+  addUpperSide(scene, 1, includeFans);
 }

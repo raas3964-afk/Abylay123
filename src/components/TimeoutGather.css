@@ -1,0 +1,20 @@
+.timeout-player-0 { --player-start: -420px; }
+.timeout-player-1 { --player-start: -290px; }
+.timeout-player-2 { --player-start: 0px; }
+.timeout-player-3 { --player-start: 290px; }
+.timeout-player-4 { --player-start: 420px; }
+
+.timeout-player {
+  animation: playersRunToCoach .9s cubic-bezier(.2,.8,.3,1) both;
+}
+
+@keyframes playersRunToCoach {
+  from {
+    opacity: 0;
+    transform: translate(var(--player-start), 130px) scale(.75);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

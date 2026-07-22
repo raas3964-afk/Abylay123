@@ -4,7 +4,7 @@ import { HomePage, type GameMode } from './components/HomePage';
 import { DeviceChoice, type DeviceMode } from './components/DeviceChoice';
 import { RegistrationPage } from './components/RegistrationPage';
 import { supabase } from './lib/supabase';
-import { teamColor, teamLogo, teamName, teamStar, type TeamId } from './components/TeamSelection';
+import { teamAwayColor, teamColor, teamLogo, teamName, teamStar, type TeamId } from './components/TeamSelection';
 
 export default function App() {
   const [registered, setRegistered] = useState(false);
@@ -57,6 +57,6 @@ export default function App() {
     return <RegistrationPage onComplete={() => setRegistered(true)} onGuest={() => setGuest(true)} />;
   }
   if (!device) return <DeviceChoice onSelect={setDevice} />;
-  if (playing) return <BasketballGame mode={gameMode} homeTeam={teamName(teams.home)} awayTeam={teamName(teams.away)} homeColor={teamColor(teams.home)} awayColor={teamColor(teams.away)} homeLogo={teamLogo(teams.home)} awayLogo={teamLogo(teams.away)} homeStar={teamStar(teams.home)} awayStar={teamStar(teams.away)} onExit={exitGame} />;
+  if (playing) return <BasketballGame mode={gameMode} homeTeam={teamName(teams.home)} awayTeam={teamName(teams.away)} homeColor={teamColor(teams.home)} awayColor={teamAwayColor(teams.away)} homeLogo={teamLogo(teams.home)} awayLogo={teamLogo(teams.away)} homeStar={teamStar(teams.home)} awayStar={teamStar(teams.away)} onExit={exitGame} />;
   return <HomePage onPlay={startGame} onLogout={logout} />;
 }

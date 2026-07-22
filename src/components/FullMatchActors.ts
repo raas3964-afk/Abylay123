@@ -114,13 +114,7 @@ export function updateFullMatch(
   match.coaches.forEach((coach, index) => {
     coach.rotation.z = Math.sin(now * .002 + index) * .035;
   });
-  // Rival players are defense-only: they never receive possession or score.
-  if (active || !active) {
-    match.attackStart = 0;
-    match.nextAttackAt = Number.POSITIVE_INFINITY;
-    match.opponentBall.visible = false;
-    return false;
-  }
+  if (!active) return false;
   if (match.attackStart) match.opponentBall.visible = true;
   if (!match.attackStart && now < match.nextAttackAt) {
     const seconds = now / 1000;
@@ -151,9 +145,9 @@ export function updateFullMatch(
   const elapsed = (now - match.attackStart) / 1000;
   const passDuration = opponents.length >= 2 ? .9 : 0;
   if (elapsed < passDuration) {
-    opponents[0].position.set(-3.2, 0, -8.5);
-    opponents[1].position.set(3.1, 0, -5.2);
-    attacker.position.set(0, 0, -11.5);
+    opponents[0].position.set(-2.8, 0, -15.2);
+    opponents[1].position.set(2.8, 0, -14.2);
+    attacker.position.set(0, 0, -12.4);
     const firstPass = elapsed < passDuration / 2;
     const passProgress = (elapsed % (passDuration / 2)) / (passDuration / 2);
     const passer = firstPass ? opponents[0] : opponents[1];

@@ -38,6 +38,17 @@ export const BASKETBALL_TEAMS = [
 
 export type TeamId = typeof BASKETBALL_TEAMS[number]['id'];
 
+const AWAY_JERSEY_COLORS: Partial<Record<TeamId, string>> = {
+  lakers: '#552583', warriors: '#f7f7f7', bulls: '#f4f4f4', celtics: '#f4f4f4',
+  knicks: '#1d428a', hornets: '#f4f4f4', wizards: '#002b5c', nets: '#111111',
+  hawks: '#f4f4f4', heat: '#111111', sixers: '#f4f4f4', raptors: '#111111',
+  cavaliers: '#fdbb30', pistons: '#1d42ba', pacers: '#002d62', bucks: '#eee1c6',
+  magic: '#111111', clippers: '#1d428a', suns: '#1d1160', kings: '#f4f4f4',
+  mavericks: '#f4f4f4', rockets: '#f4f4f4', grizzlies: '#12173f', pelicans: '#c8102e',
+  spurs: '#111111', nuggets: '#fec524', timberwolves: '#78be20', thunder: '#ef3b24',
+  blazers: '#111111', jazz: '#fff21f',
+};
+
 type Props = {
   homeTeam: TeamId | '';
   awayTeam: TeamId | '';
@@ -51,6 +62,10 @@ export function teamName(teamId: TeamId) {
 
 export function teamColor(teamId: TeamId) {
   return BASKETBALL_TEAMS.find((team) => team.id === teamId)?.color ?? '#2463d4';
+}
+
+export function teamAwayColor(teamId: TeamId) {
+  return AWAY_JERSEY_COLORS[teamId] ?? '#f4f4f4';
 }
 
 export function teamLogo(teamId: TeamId) {

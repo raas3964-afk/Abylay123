@@ -1,0 +1,36 @@
+.team-trophy {
+  position: absolute;
+  z-index: 6;
+  bottom: 126px;
+  left: 50%;
+  font-size: 52px;
+  filter: drop-shadow(0 0 16px #ffc928);
+  transform: translateX(-50%);
+  animation: teamLiftCup 1.2s ease-out forwards, teamCupFloat .8s 1.2s infinite alternate;
+}
+
+.mvp-teammate::before,
+.mvp-player::before {
+  position: absolute;
+  z-index: 3;
+  top: 35px;
+  left: -2px;
+  color: #d59a72;
+  font-size: 32px;
+  content: "🙌";
+  animation: raiseHands 1.2s ease-out forwards;
+}
+
+@keyframes teamLiftCup {
+  from { opacity: 0; transform: translate(-50%, 70px) scale(.55); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+@keyframes teamCupFloat {
+  to { transform: translate(-50%, -9px) scale(1.04); }
+}
+
+@keyframes raiseHands {
+  from { transform: translateY(25px); }
+  to { transform: translateY(-20px); }
+}

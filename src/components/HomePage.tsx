@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './HomePage.css';
 import './HomePageOverflow.css';
+import './HomeLegends.css';
 import { TeamSelection, type TeamId } from './TeamSelection';
 
 type Props = {
@@ -8,9 +9,10 @@ type Props = {
   onLogout: () => void;
 };
 
-export type GameMode = '5v5' | '3v3' | '1v1';
+export type GameMode = '5v5' | '3v3' | '1v1' | 'training';
 
 const GAME_MODES: { value: GameMode; title: string; subtitle: string }[] = [
+  { value: 'training', title: 'ТРЕНИРОВКА', subtitle: 'Фишки и дриблинг' },
   { value: '5v5', title: '5 VS 5', subtitle: 'Полный матч' },
   { value: '3v3', title: '3 VS 3', subtitle: 'Быстрая игра' },
   { value: '1v1', title: '1 VS 1', subtitle: 'Дуэль' },
@@ -75,10 +77,12 @@ export function HomePage({ onPlay, onLogout }: Props) {
         </div>
       </header>
       <section className="home-arena-decor" aria-label="Basketball legends">
-        <div className="legend-banner curry"><b>STEPHEN CURRY</b><span>GREATEST SHOOTER</span></div>
         <div className="home-nba-flag" aria-label="NBA"><i/><b>NBA</b></div>
-        <div className="legend-banner kyrie"><b>KYRIE IRVING</b><span>HANDLE MASTER</span></div>
-        <div className="legend-banner lamelo"><b>LAMELO BALL</b><span>FUTURE STAR</span></div>
+        <div className="home-legends-line">
+          <article className="home-legend curry-player"><div><i/><b>30</b></div><strong>STEPHEN CURRY</strong><span>GREATEST SHOOTER</span></article>
+          <article className="home-legend kyrie-player"><div><i/><b>11</b></div><strong>KYRIE IRVING</strong><span>HANDLE MASTER</span></article>
+          <article className="home-legend lamelo-player"><div><i/><b>1</b></div><strong>LAMELO BALL</strong><span>FUTURE STAR</span></article>
+        </div>
       </section>
       <section className="home-hero">
         <div className="home-welcome">
