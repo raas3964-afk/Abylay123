@@ -1,0 +1,24 @@
+.phone-game,
+.phone-game .game3d-card,
+.phone-game .three-court,
+.phone-game .three-court canvas {
+  width: 100vw !important;
+  height: 100dvh !important;
+  touch-action: none;
+}
+
+.phone-game .mobile-game-controls {
+  display: flex;
+}
+
+.phone-game .game3d > header,
+.phone-game > header {
+  transform: scale(.82);
+  transform-origin: top left;
+}
+
+@media (orientation: portrait) {
+  .phone-game .mobile-game-controls { bottom: max(10px, env(safe-area-inset-bottom)); }
+  .phone-game .mobile-stick { width: 145px; height: 145px; }
+  .phone-game .mobile-actions { width: 180px; }
+}

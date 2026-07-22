@@ -1,0 +1,44 @@
+.mobile-stick.analog-stick {
+  position: relative;
+  display: block;
+  border: 2px solid #ffffff45;
+  background: radial-gradient(circle, #20314dbb 0 28%, #09111fbb 30% 68%, #ffffff18 70%);
+  box-shadow: 0 8px 24px #000a, inset 0 0 22px #6aa9ff22;
+  touch-action: none;
+}
+
+.analog-stick .stick-ring {
+  position: absolute;
+  inset: 25%;
+  border: 2px solid #ffffff38;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.analog-stick .stick-knob {
+  position: absolute;
+  top: calc(50% - 27px);
+  left: calc(50% - 27px);
+  display: block;
+  width: 54px;
+  height: 54px;
+  border: 3px solid #ffffff9c;
+  border-radius: 50%;
+  background: linear-gradient(145deg,#4c76ae,#172943);
+  box-shadow: 0 7px 13px #0009,inset 0 3px 6px #ffffff30;
+  pointer-events: none;
+  transition: transform .04s linear;
+}
+
+.analog-stick::after {
+  position: absolute;
+  right: 0;
+  bottom: -18px;
+  left: 0;
+  color: #d5e6ff;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-align: center;
+  content: "ДВИЖЕНИЕ";
+}
