@@ -323,8 +323,8 @@ function ThreeCourt({ device, active, mascotVisible, score, opponentScore, time,
       const landscape = host.clientWidth >= host.clientHeight;
       camera.fov = landscape ? 64 : 76;
       camera.position.set(
-        landscape ? 43 : 54,
-        landscape ? 29 : 38,
+        landscape ? 46 : 56,
+        landscape ? 24 : 34,
         COURT_CENTER_Z,
       );
       camera.lookAt(0, 1.2, COURT_CENTER_Z);

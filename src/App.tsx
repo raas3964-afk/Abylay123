@@ -39,7 +39,9 @@ export default function App() {
     const isPhone = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 800;
     try {
       if (!document.fullscreenElement) {
-        await document.documentElement.requestFullscreen();
+        const page = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void };
+        if (page.requestFullscreen) await page.requestFullscreen();
+        else await page.webkitRequestFullscreen?.();
       }
       if (isPhone && 'lock' in screen.orientation) {
         await (screen.orientation as ScreenOrientation & { lock: (orientation: string) => Promise<void> }).lock('landscape');
@@ -53,7 +55,9 @@ export default function App() {
   }
 
   async function exitGame() {
+    const fullscreenDocument = document as Document & { webkitFullscreenElement?: Element; webkitExitFullscreen?: () => Promise<void> | void };
     if (document.fullscreenElement) await document.exitFullscreen();
+    else if (fullscreenDocument.webkitFullscreenElement) await fullscreenDocument.webkitExitFullscreen?.();
     setPlaying(false);
   }
 
