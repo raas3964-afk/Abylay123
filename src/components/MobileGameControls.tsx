@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import './MobileGameControls.css';
 import './MobileRun.css';
+import './MobileSpin.css';
 import './AnalogJoystick.css';
 
 function pressKey(code: string) {
@@ -27,6 +28,7 @@ function HoldButton({ code, label, className = '' }: HoldButtonProps) {
 
 export function MobileGameControls() {
   const stickRef = useRef<HTMLDivElement>(null);
+  const scrollStart = useRef({ y: 0, top: 0 });
   const activeDirections = useRef(new Set<string>());
   const [knob, setKnob] = useState({ x: 0, y: 0 });
 
@@ -64,6 +66,24 @@ export function MobileGameControls() {
   return (
     <div className="mobile-game-controls" aria-label="Мобильное управление">
       <div
+        className="mobile-scroll-control"
+        aria-label="Прокрутка площадки"
+        onPointerDown={(event) => {
+          event.preventDefault();
+          event.currentTarget.setPointerCapture(event.pointerId);
+          const game = document.querySelector<HTMLElement>('.phone-game');
+          scrollStart.current = { y: event.clientY, top: game?.scrollTop ?? 0 };
+        }}
+        onPointerMove={(event) => {
+          if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+          const game = document.querySelector<HTMLElement>('.phone-game');
+          if (game) game.scrollTop = scrollStart.current.top + scrollStart.current.y - event.clientY;
+        }}
+      >
+        <span>↕</span>
+        <small>ЛИСТАТЬ</small>
+      </div>
+      <div
         className="mobile-stick analog-stick"
         ref={stickRef}
         onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); moveJoystick(event.clientX, event.clientY); }}
@@ -77,6 +97,7 @@ export function MobileGameControls() {
       <div className="mobile-actions">
         <HoldButton code="ControlLeft" label="БЕГ" className="mobile-run" />
         <HoldButton code="ShiftLeft" label="ФИНТ" className="mobile-faint" />
+        <HoldButton code="KeyZ" label="СПИН" className="mobile-spin" />
         <HoldButton code="KeyE" label="ПАС" className="mobile-pass" />
         <HoldButton code="Space" label="ДАНК" className="mobile-dunk" />
         <button

@@ -42,7 +42,7 @@ export default function App() {
         await document.documentElement.requestFullscreen();
       }
       if (isPhone && 'lock' in screen.orientation) {
-        await (screen.orientation as ScreenOrientation & { lock: (orientation: string) => Promise<void> }).lock('portrait');
+        await (screen.orientation as ScreenOrientation & { lock: (orientation: string) => Promise<void> }).lock('landscape');
       }
     } catch {
       // The game still opens if the browser blocks fullscreen mode.

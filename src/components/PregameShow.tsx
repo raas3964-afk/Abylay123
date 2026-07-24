@@ -4,6 +4,7 @@ import { ArenaTeamLogos } from "./ArenaTeamLogos";
 import "./PregameShow.css";
 import "./PregameTeamRitual.css";
 import "./PregameVs.css";
+import "./PregameLinkedHuddle.css";
 import { TicketSalesShow } from "./TicketSalesShow";
 
 type Props = { trophyName: string; homeTeam: string; awayTeam: string; homeColor: string; awayColor: string; homeLogo: string; awayLogo: string; homeStar: string; awayStar: string; onComplete: () => void };

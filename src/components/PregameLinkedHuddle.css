@@ -1,0 +1,33 @@
+.team-huddle .huddle-player::after {
+  position: absolute;
+  z-index: 3;
+  top: 36px;
+  left: -18px;
+  width: 86px;
+  height: 10px;
+  border-radius: 8px;
+  background: #a96d48;
+  box-shadow: 0 2px 5px #0008;
+  content: "";
+  transform: rotate(-5deg);
+  transform-origin: center;
+  animation: linkShoulders .7s .55s both;
+}
+
+.team-huddle .huddle-coach::before {
+  position: absolute;
+  z-index: 4;
+  top: 25px;
+  left: -28px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  content: "ДЕРЖИМСЯ ВМЕСТЕ!";
+  text-shadow: 0 0 10px #ffb347;
+  white-space: nowrap;
+}
+
+@keyframes linkShoulders {
+  from { opacity: 0; transform: scaleX(.2) rotate(-5deg); }
+  to { opacity: 1; transform: scaleX(1) rotate(-5deg); }
+}

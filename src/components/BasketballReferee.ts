@@ -7,6 +7,22 @@ export type Referee = {
   signalUntil: number;
 };
 
+function refereeBadge() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 128;
+  const context = canvas.getContext('2d');
+  if (context) {
+    context.fillStyle = '#ffcf33';
+    context.fillRect(0, 0, 256, 128);
+    context.fillStyle = '#111827';
+    context.font = '900 72px Arial';
+    context.textAlign = 'center';
+    context.fillText('REF', 128, 88);
+  }
+  return new THREE.CanvasTexture(canvas);
+}
+
 export function createReferee(): Referee {
   const group = new THREE.Group();
   const shirt = new THREE.Mesh(
@@ -15,14 +31,30 @@ export function createReferee(): Referee {
   );
   shirt.position.y = 1.35;
 
-  const stripes = [-.24, 0, .24].map((x) => {
-    const stripe = new THREE.Mesh(
-      new THREE.BoxGeometry(.09, .85, .04),
-      new THREE.MeshStandardMaterial({ color: 0x202735 }),
-    );
-    stripe.position.set(x, 1.4, -.39);
+  const stripeMaterial = new THREE.MeshStandardMaterial({ color: 0x111111 });
+  const stripes = [-.32, -.16, 0, .16, .32].flatMap((x) => [-1, 1].map((side) => {
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(.075, .86, .035), stripeMaterial);
+    stripe.position.set(x, 1.4, side * .39);
     return stripe;
+  }));
+  const shoulders = [-1, 1].map((side) => {
+    const sleeve = new THREE.Mesh(new THREE.SphereGeometry(.25, 12, 10), stripeMaterial);
+    sleeve.position.set(side * .48, 1.66, 0);
+    return sleeve;
   });
+  const belt = new THREE.Mesh(new THREE.CylinderGeometry(.39, .39, .1, 16), stripeMaterial);
+  belt.position.y = .88;
+  const badge = new THREE.Mesh(
+    new THREE.PlaneGeometry(.32, .17),
+    new THREE.MeshBasicMaterial({ map: refereeBadge(), side: THREE.DoubleSide }),
+  );
+  badge.position.set(.18, 1.58, .43);
+  const whistle = new THREE.Mesh(
+    new THREE.CapsuleGeometry(.035, .11, 4, 8),
+    new THREE.MeshStandardMaterial({ color: 0xffcf33, metalness: .7 }),
+  );
+  whistle.position.set(0, 1.98, .42);
+  whistle.rotation.z = Math.PI / 2;
   const head = new THREE.Mesh(
     new THREE.SphereGeometry(.29, 16, 12),
     new THREE.MeshStandardMaterial({ color: 0xa96d48 }),
@@ -39,7 +71,7 @@ export function createReferee(): Referee {
   const rightArm = leftArm.clone();
   leftArm.position.set(-.5, 1.5, 0); rightArm.position.set(.5, 1.5, 0);
   leftArm.rotation.z = -.2; rightArm.rotation.z = .2;
-  group.add(shirt, head, leftArm, rightArm, ...stripes, ...legs);
+  group.add(shirt, head, leftArm, rightArm, belt, badge, whistle, ...shoulders, ...stripes, ...legs);
   group.position.set(6.7, 0, -7);
   group.rotation.y = -Math.PI / 2;
   return { group, leftArm, rightArm, signalUntil: 0 };

@@ -4,7 +4,7 @@
   inset: 0;
   width: 100vw !important;
   max-width: none !important;
-  height: 100vh;
+  height: 100dvh;
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden;
@@ -33,7 +33,7 @@
   position: absolute;
   inset: 0;
   width: 100vw !important;
-  height: 100vh !important;
+  height: 100dvh !important;
   min-height: 0;
   max-height: none;
   border: 0;
@@ -44,7 +44,7 @@
 .three-court,
 .three-court canvas {
   width: 100vw !important;
-  height: 100vh !important;
+  height: 100dvh !important;
 }
 
 .game-exit-button {
@@ -74,7 +74,7 @@
   .game3d > header { top: 8px; left: 8px; height: 42px; padding: 0 9px; }
   .game3d > header span { font-size: 24px; }
   .game3d > header h1 { font-size: 15px; }
-  .game3d-card { height: 100vh; min-height: 0; }
+  .game3d-card { height: 100dvh; min-height: 0; }
   .game-exit-button { top: 11px; right: 8px; }
   .score-square { top: 7px; width: 70px; height: 70px; }
   .score-square b { font-size: 17px; }

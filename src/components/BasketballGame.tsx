@@ -17,12 +17,14 @@ import { createArenaGrandstands } from "./ArenaGrandstands";
 import { MvpCeremony } from "./MvpCeremony";
 import { BasketballTimeout } from "./BasketballTimeout";
 import { MobileGameControls } from "./MobileGameControls";
+import { LockerRoomBreak } from "./LockerRoomBreak";
 import { createTrainingCourse } from "./BasketballTraining";
 import "./BasketballGameHeader.css";
 import "./BasketballFullscreen.css";
 import "./PhonePortraitGame.css";
 
 type Props = {
+  device: DeviceMode;
   active: boolean;
   mascotVisible: boolean;
   score: number;
@@ -48,8 +50,44 @@ let nextHairStyle = 0;
 let nextJerseyNumber = 0;
 const PLAYER_MOVE_SPEED = 10.2;
 const PLAYER_SHOT_ACCURACY = 0.45;
-const QUARTER_DURATION = 30;
+const QUARTER_DURATION = 60;
 const COURT_CENTER_Z = -4.5;
+let gameAudioContext: AudioContext | null = null;
+
+function audioContext() {
+  gameAudioContext ??= new AudioContext();
+  void gameAudioContext.resume();
+  return gameAudioContext;
+}
+
+function playNetSound() {
+  const context = audioContext();
+  const startedAt = context.currentTime;
+  const duration = .56;
+  const buffer = context.createBuffer(1, Math.floor(context.sampleRate * duration), context.sampleRate);
+  const samples = buffer.getChannelData(0);
+  for (let index = 0; index < samples.length; index += 1) {
+    const progress = index / samples.length;
+    const rustle = Math.random() * 2 - 1;
+    samples[index] = rustle * Math.sin(progress * Math.PI) * (1 - progress) * .95;
+  }
+  const source = context.createBufferSource();
+  source.buffer = buffer;
+  const filter = context.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.setValueAtTime(2450, startedAt);
+  filter.frequency.exponentialRampToValueAtTime(900, startedAt + duration);
+  filter.Q.value = .45;
+  const gain = context.createGain();
+  gain.gain.setValueAtTime(.001, startedAt);
+  gain.gain.exponentialRampToValueAtTime(.78, startedAt + .018);
+  gain.gain.exponentialRampToValueAtTime(.001, startedAt + duration);
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(context.destination);
+  source.start(startedAt);
+  source.stop(startedAt + duration);
+}
 
 const TROPHY_NAMES: Record<GameMode, string> = {
   "5v5": "КУБОК ЧЕМПИОНОВ",
@@ -250,7 +288,7 @@ function arenaSkyTexture() {
   return new THREE.CanvasTexture(canvas);
 }
 
-function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter, shotClock, onScore, onOpponentScore, onCharge, onMessage, onShot, homeColor, awayColor, homeTeam, awayTeam, homeLogo, awayLogo, mode }: Props) {
+function ThreeCourt({ device, active, mascotVisible, score, opponentScore, time, quarter, shotClock, onScore, onOpponentScore, onCharge, onMessage, onShot, homeColor, awayColor, homeTeam, awayTeam, homeLogo, awayLogo, mode }: Props) {
   const mount = useRef<HTMLDivElement>(null);
   const activeRef = useRef(active);
   const mascotVisibleRef = useRef(mascotVisible);
@@ -276,13 +314,28 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
     scene.background = arenaSkyTexture();
     scene.fog = new THREE.Fog(0x315f94, 190, 360);
     const camera = new THREE.PerspectiveCamera(
-      64,
+      device === "phone" ? 62 : 64,
       host.clientWidth / host.clientHeight,
       0.1,
       420,
     );
-    camera.position.set(27, 24, -5);
-    camera.lookAt(0, 1.7, -5);
+    const framePhoneCourt = () => {
+      const landscape = host.clientWidth >= host.clientHeight;
+      camera.fov = landscape ? 66 : 74;
+      camera.position.set(
+        0,
+        landscape ? 76 : 82,
+        landscape ? COURT_CENTER_Z + 3 : COURT_CENTER_Z,
+      );
+      camera.lookAt(0, 0, COURT_CENTER_Z);
+      camera.updateProjectionMatrix();
+    };
+    if (device === "phone") {
+      framePhoneCourt();
+    } else {
+      camera.position.set(27, 24, -5);
+      camera.lookAt(0, 1.7, -5);
+    }
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 1.2));
     renderer.setSize(host.clientWidth, host.clientHeight);
@@ -407,13 +460,13 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
       key.rotation.x = -Math.PI / 2;
       key.position.set(0, .015, basketZ + (index === 0 ? 3.2 : -3.2));
       scene.add(key);
-      const arc = new THREE.Mesh(new THREE.TorusGeometry(7.5, .065, 8, 96, Math.PI), lineMaterial);
+      const arc = new THREE.Mesh(new THREE.TorusGeometry(9.25, .075, 14, 192, Math.PI), lineMaterial);
       arc.rotation.x = index === 0 ? Math.PI / 2 : -Math.PI / 2;
       arc.position.set(0, .035, basketZ);
       scene.add(arc);
-      [-7.51, 7.51].forEach((x) => {
-        const cornerLine = new THREE.Mesh(new THREE.BoxGeometry(.07, .05, 4.1), lineMaterial);
-        cornerLine.position.set(x, .03, basketZ + (index === 0 ? 2.05 : -2.05));
+      [-9.26, 9.26].forEach((x) => {
+        const cornerLine = new THREE.Mesh(new THREE.BoxGeometry(.075, .05, 5.2), lineMaterial);
+        cornerLine.position.set(x, .03, basketZ + (index === 0 ? 2.6 : -2.6));
         scene.add(cornerLine);
       });
       const freeThrowZ = basketZ + (index === 0 ? 6.4 : -6.4);
@@ -438,6 +491,20 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
     circle.rotation.x = Math.PI / 2;
     circle.position.set(0, 0.02, COURT_CENTER_Z);
     scene.add(circle);
+    if (mode !== "training") {
+      const centerNbaFlag = new THREE.Mesh(
+        new THREE.PlaneGeometry(5.2, 7.8),
+        new THREE.MeshBasicMaterial({
+          map: nbaFlagTexture(),
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: .9,
+        }),
+      );
+      centerNbaFlag.rotation.x = -Math.PI / 2;
+      centerNbaFlag.position.set(0, .006, COURT_CENTER_Z);
+      scene.add(centerNbaFlag);
+    }
 
     const jumbotron = new THREE.Group();
     const scoreboardCanvas = document.createElement('canvas');
@@ -676,10 +743,15 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
     let scored = false;
     let freeThrow = false;
     let shotPoints = 2;
+    let longRangeShot = false;
     let stepBackUntil = 0;
     let stepBackReady = 0;
     let evadeUntil = 0;
     let crossoverReady = 0;
+    let spinStart = 0;
+    let spinUntil = 0;
+    let spinReady = 0;
+    let spinDirection = 1;
     let stealReady = 0;
     let foulReady = 0;
     let defenseReady = 0;
@@ -817,6 +889,20 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
         callbacks.current.onMessage("⚡ СТЕП-БЭК! Бросай!");
       }
       if (
+        event.code === "KeyZ" &&
+        activeRef.current &&
+        performance.now() > spinReady &&
+        !flying &&
+        !dunkStart
+      ) {
+        spinStart = performance.now();
+        spinUntil = spinStart + 620;
+        spinReady = spinStart + 1450;
+        spinDirection = keys.has("KeyA") ? -1 : keys.has("KeyD") ? 1 : player.position.x <= 0 ? 1 : -1;
+        evadeUntil = spinUntil + 350;
+        callbacks.current.onMessage("🌪️ СПИН-МУВ! ЗАЩИТНИК ОСТАЛСЯ ПОЗАДИ");
+      }
+      if (
         event.code === "KeyE" &&
         activeRef.current &&
         mode !== "training" &&
@@ -875,6 +961,7 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
     };
     const startCharging = () => {
       if (!activeRef.current || flying || dunkStart || partnerRunStart || teamPassStart || tipOffStart) return;
+      audioContext();
       charging = true;
       chargeStart = performance.now();
       callbacks.current.onCharge(1);
@@ -906,6 +993,7 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
         return;
       }
       const shotDistance = Math.hypot(player.position.x, player.position.z + 16.9);
+      longRangeShot = shotDistance > 19;
       const longRangeDifficulty = freeThrow
         ? 0
         : THREE.MathUtils.clamp((shotDistance - 14) / 13, 0, 1);
@@ -963,7 +1051,6 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
         activeRef.current &&
         mode !== "training" &&
         !wasActive &&
-        gameInfoRef.current.quarter === 1 &&
         gameInfoRef.current.time === QUARTER_DURATION
       ) {
         tipOffStart = now;
@@ -1094,6 +1181,7 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
               dunkScored = true;
               startCelebration();
               callbacks.current.onScore(2);
+              playNetSound();
               callbacks.current.onMessage("💥 ДАНК! ИГРОК ВИСИТ НА КОЛЬЦЕ · +2");
             }
           } else if (dunkTime < 1.82) {
@@ -1127,6 +1215,10 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
           playerY = Math.max(0, playerY + jumpVelocity * dt);
           if (playerY === 0) jumpVelocity = 0;
           player.position.y = playerY;
+        }
+        if (now < spinUntil && !dunkStart) {
+          player.position.x = THREE.MathUtils.clamp(player.position.x + spinDirection * dt * 3.8, -5.8, 5.8);
+          player.position.z = Math.max(-15.8, player.position.z - dt * 4.4);
         }
         if (opponentAttacking && now > defenseReady) {
           const attacker = opponentAttacker;
@@ -1226,6 +1318,15 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
               defender.position.z += dt * 1.4;
             }
           }
+          const playerContactDistance = Math.hypot(
+            player.position.x - defender.position.x,
+            player.position.z - defender.position.z,
+          );
+          if (playerContactDistance < .95) {
+            defender.userData.playerContactSince ||= now;
+          } else {
+            defender.userData.playerContactSince = 0;
+          }
         });
         if (
           !flying &&
@@ -1239,7 +1340,8 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
               Math.hypot(
                 player.position.x - defender.position.x,
                 player.position.z - defender.position.z,
-              ) < 1.18,
+              ) < .95 &&
+              now - Number(defender.userData.playerContactSince ?? now) > 650,
           );
           if (thief) {
             const hardContact =
@@ -1373,6 +1475,7 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
           ) {
             scored = true;
             startCelebration();
+            if (longRangeShot) playNetSound();
             callbacks.current.onScore(
               shotPoints === 1
                 ? 1
@@ -1395,10 +1498,13 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
               );
             freeThrow = false;
             shotPoints = 2;
+            longRangeShot = false;
           }
         }
       }
-      player.rotation.y = 0;
+      player.rotation.y = now < spinUntil
+        ? ((now - spinStart) / (spinUntil - spinStart)) * Math.PI * 2 * spinDirection
+        : 0;
       player.scale.setScalar(1);
       teamRoster.forEach((member) => {
         const leftArm = member.getObjectByName("leftArm");
@@ -1412,7 +1518,8 @@ function ThreeCourt({ active, mascotVisible, score, opponentScore, time, quarter
     id = requestAnimationFrame(animate);
     const resize = () => {
       camera.aspect = host.clientWidth / host.clientHeight;
-      camera.updateProjectionMatrix();
+      if (device === "phone") framePhoneCourt();
+      else camera.updateProjectionMatrix();
       renderer.setSize(host.clientWidth, host.clientHeight);
     };
     window.addEventListener("resize", resize);
@@ -1581,6 +1688,7 @@ export function BasketballGame({ mode, device, homeTeam, awayTeam, homeColor, aw
       <section className="game3d-card">
         <ThreeCourt
           key="players-with-medium-hair-v4"
+          device={device}
           active={active && !waterBreak && !quarterBreak && !timeoutActive}
           mascotVisible={mode !== "training" && (waterBreak || quarterBreak)}
           score={score}
@@ -1602,7 +1710,7 @@ export function BasketballGame({ mode, device, homeTeam, awayTeam, homeColor, aw
           mode={mode}
         />
         {waterBreak && <div className="water-break"><span>💧</span><b>WATER BREAK</b><small>Players are hydrating · game resumes soon</small></div>}
-        {quarterBreak && <div className="water-break"><span>🏀</span><b>END OF QUARTER {quarter}</b><small>Next quarter starts soon</small></div>}
+        {quarterBreak && <LockerRoomBreak team={homeTeam} teamColor={homeColor} quarter={quarter} />}
         {timeoutActive && <BasketballTimeout team={homeTeam} teamColor={homeColor} timeoutsLeft={timeoutsLeft} />}
         <aside className="controls-panel">
           <h3>УПРАВЛЕНИЕ</h3>
@@ -1627,6 +1735,10 @@ export function BasketballGame({ mode, device, homeTeam, awayTeam, homeColor, aw
           <p>
             <kbd>Q</kbd>
             <span>Степ-бэк</span>
+          </p>
+          <p>
+            <kbd>Z</kbd>
+            <span>Спин-мув</span>
           </p>
           <p>
             <kbd>E</kbd>
@@ -1669,7 +1781,7 @@ export function BasketballGame({ mode, device, homeTeam, awayTeam, homeColor, aw
             setMessage("У кольца: Space + мышь — данк");
           }} />
         )}
-        {time === 0 && quarter === 4 && !pregame && (
+        {device !== "phone" && time === 0 && quarter === 4 && !pregame && (
           <MvpCeremony
             team={score >= opponentScore ? homeTeam : awayTeam}
             player={score >= opponentScore ? homeStar : awayStar}
@@ -1679,7 +1791,7 @@ export function BasketballGame({ mode, device, homeTeam, awayTeam, homeColor, aw
             onRematch={start}
           />
         )}
-        {!active && !pregame && !(time === 0 && quarter === 4) && (
+        {!active && !pregame && (device === "phone" || !(time === 0 && quarter === 4)) && (
           <div className="game-overlay">
             <span className="ball-logo">🏀</span>
             <small>{mode === "training" ? "🔒 БЕЗ ЗРИТЕЛЕЙ · ТОЛЬКО КОМАНДА" : "НАСТОЯЩИЙ 3D-БАСКЕТБОЛ"}</small>

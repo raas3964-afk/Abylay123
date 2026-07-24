@@ -4,11 +4,84 @@
 .phone-game .three-court canvas {
   width: 100vw !important;
   height: 100dvh !important;
+}
+
+.phone-game {
+  overflow-x: hidden;
+  overflow-y: scroll;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.phone-game::-webkit-scrollbar {
+  display: none;
+}
+
+.phone-game::after {
+  display: block;
+  width: 1px;
+  height: 135dvh;
+  pointer-events: none;
+  content: "";
+}
+
+.phone-game .three-court,
+.phone-game .three-court canvas {
   touch-action: none;
 }
 
+.phone-game .mobile-game-controls,
+.phone-game .mobile-stick,
+.phone-game .mobile-actions,
+.phone-game .mobile-game-controls button {
+  touch-action: none;
+}
+
+.phone-game .game3d-card,
+.phone-game .three-court,
+.phone-game .three-court canvas {
+  height: 135dvh !important;
+}
+
 .phone-game .mobile-game-controls {
+  position: fixed;
+  z-index: 100;
+  right: 0;
+  left: 0;
   display: flex;
+}
+
+.mobile-scroll-control {
+  position: fixed;
+  z-index: 101;
+  top: 50%;
+  right: max(5px, env(safe-area-inset-right));
+  display: flex;
+  width: 42px;
+  height: 82px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ffffff55;
+  border-radius: 22px;
+  background: #101827cc;
+  color: #fff;
+  box-shadow: 0 6px 18px #0008;
+  pointer-events: auto;
+  touch-action: none;
+  transform: translateY(-50%);
+}
+
+.mobile-scroll-control span {
+  font-size: 23px;
+}
+
+.mobile-scroll-control small {
+  font-size: 6px;
+  font-weight: 900;
+  writing-mode: vertical-rl;
 }
 
 .phone-game .game3d > header,
@@ -19,6 +92,26 @@
 
 @media (orientation: portrait) {
   .phone-game .mobile-game-controls { bottom: max(10px, env(safe-area-inset-bottom)); }
-  .phone-game .mobile-stick { width: 145px; height: 145px; }
-  .phone-game .mobile-actions { width: 180px; }
+  .phone-game .mobile-stick { width: 132px; height: 132px; }
+  .phone-game .mobile-actions {
+    width: 180px;
+    transform: scale(.82);
+    transform-origin: right bottom;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .phone-game .mobile-game-controls {
+    bottom: max(6px, env(safe-area-inset-bottom));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-left: max(12px, env(safe-area-inset-left));
+  }
+  .phone-game .mobile-stick {
+    width: 128px;
+    height: 128px;
+  }
+  .phone-game .mobile-actions {
+    transform: scale(.82);
+    transform-origin: right bottom;
+  }
 }
