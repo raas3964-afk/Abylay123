@@ -1,6 +1,9 @@
 .home-page {
+  height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 /* Keep the welcome copy directly below the three legend cards. */

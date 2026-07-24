@@ -145,7 +145,17 @@ export function HomePage({ onPlay, onLogout }: Props) {
             setHomeTeam(team);
             if (team === awayTeam) setAwayTeam('');
           }}
-          onAwayChange={setAwayTeam}
+          onAwayChange={(team) => {
+            setAwayTeam(team);
+            if (team && window.matchMedia('(pointer: coarse)').matches) {
+              window.setTimeout(() => {
+                document.getElementById('play-button')?.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'center',
+                });
+              }, 100);
+            }
+          }}
         />
 
       </section>
