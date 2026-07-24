@@ -321,13 +321,13 @@ function ThreeCourt({ device, active, mascotVisible, score, opponentScore, time,
     );
     const framePhoneCourt = () => {
       const landscape = host.clientWidth >= host.clientHeight;
-      camera.fov = landscape ? 66 : 74;
+      camera.fov = landscape ? 64 : 76;
       camera.position.set(
-        0,
-        landscape ? 76 : 82,
-        landscape ? COURT_CENTER_Z + 3 : COURT_CENTER_Z,
+        landscape ? 43 : 54,
+        landscape ? 29 : 38,
+        COURT_CENTER_Z,
       );
-      camera.lookAt(0, 0, COURT_CENTER_Z);
+      camera.lookAt(0, 1.2, COURT_CENTER_Z);
       camera.updateProjectionMatrix();
     };
     if (device === "phone") {
